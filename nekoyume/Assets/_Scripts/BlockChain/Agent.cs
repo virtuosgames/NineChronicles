@@ -59,7 +59,7 @@ namespace Nekoyume.BlockChain
 
         private const int MaxSeed = 3;
 
-        public static readonly string DefaultStoragePath = StorePath.GetDefaultStoragePath();
+        public static string DefaultStoragePath;
 
         public Subject<long> BlockIndexSubject { get; } = new Subject<long>();
         public Subject<BlockHash> BlockTipHashSubject { get; } = new Subject<BlockHash>();
@@ -170,7 +170,7 @@ namespace Nekoyume.BlockChain
             InitializeLogger(consoleSink, development);
             BlockPolicySource = new BlockPolicySource(Log.Logger, LogEventLevel.Debug);
 
-            var genesisBlock = BlockManager.ImportBlock(genesisBlockPath ?? BlockManager.GenesisBlockPath);
+            var genesisBlock = BlockManager.ImportBlock(genesisBlockPath ?? BlockManager.GenesisBlockPath());
             if (genesisBlock is null)
             {
                 Debug.LogError("There is no genesis block.");
@@ -187,11 +187,13 @@ namespace Nekoyume.BlockChain
             var policy = BlockPolicySource.GetPolicy();
             _stagePolicy = new VolatileStagePolicy<NCAction>();
             PrivateKey = privateKey;
+
             store = LoadStore(path, storageType);
 
             try
             {
-                IKeyValueStore stateKeyValueStore = new RocksDBKeyValueStore(Path.Combine(path, "states"));
+                string keyPath = path + "/states";
+                IKeyValueStore stateKeyValueStore = new RocksDBKeyValueStore(keyPath);
                 _stateStore = new TrieStateStore(stateKeyValueStore);
                 blocks = new BlockChain<NCAction>(
                     policy,
@@ -345,6 +347,8 @@ namespace Nekoyume.BlockChain
 
         private void Awake()
         {
+            DefaultStoragePath = StorePath.GetDefaultStoragePath();
+
             ForceDotNet.Force();
             string parentDir = Path.GetDirectoryName(DefaultStoragePath);
             if (!Directory.Exists(parentDir))

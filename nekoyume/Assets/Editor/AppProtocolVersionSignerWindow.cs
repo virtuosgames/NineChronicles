@@ -174,7 +174,16 @@ namespace Editor
 
         void FillAttributes()
         {
-            _keyStore = Web3KeyStore.DefaultKeyStore;
+            if (UnityEngine.Application.platform == UnityEngine.RuntimePlatform.Android)
+            {
+                string dataPath = Application.persistentDataPath;
+                _keyStore = new Web3KeyStore(dataPath + "/KeyStore");
+            }
+            else
+            {
+                _keyStore = Web3KeyStore.DefaultKeyStore;
+            }
+
             maxSize = new Vector2(600, 450);
             _timestamp = DateTimeOffset.UtcNow;
             titleContent = new GUIContent("Libplanet Version Signer");

@@ -10,6 +10,7 @@ using Nekoyume.UI.Module;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.Android;
 
 namespace Nekoyume.UI
 {
@@ -28,7 +29,7 @@ namespace Nekoyume.UI
             CreatePassword,
         }
 
-        public IKeyStore KeyStore = Web3KeyStore.DefaultKeyStore;
+        public IKeyStore KeyStore;
         public InputField passPhraseField;
         public InputField retypeField;
         public InputField loginField;
@@ -68,6 +69,17 @@ namespace Nekoyume.UI
 
         protected override void Awake()
         {
+            // Default KeyStore in android is invalid, we should redefine it.
+            if (UnityEngine.Application.platform == UnityEngine.RuntimePlatform.Android)
+            {
+                string dataPath = Application.persistentDataPath;
+                KeyStore = new Web3KeyStore(dataPath + "/KeyStore");
+            }
+            else
+            {
+                KeyStore = Web3KeyStore.DefaultKeyStore;
+            }
+
             _capturedImage = GetComponentInChildren<CapturedImage>();
             State.Value = States.Show;
             State.Subscribe(SubscribeState).AddTo(gameObject);
@@ -314,7 +326,16 @@ namespace Nekoyume.UI
                 _capturedImage.Show();
             }
 
-            KeyStore = path is null ? Web3KeyStore.DefaultKeyStore : new Web3KeyStore(path);
+            if (UnityEngine.Application.platform == UnityEngine.RuntimePlatform.Android)
+            {
+                string dataPath = Application.persistentDataPath;
+                KeyStore = path is null ? new Web3KeyStore(dataPath + "/KeyStore") : new Web3KeyStore(path);
+            }
+            else
+            {
+                KeyStore = path is null ? Web3KeyStore.DefaultKeyStore : new Web3KeyStore(path);
+            }
+
             _privateKeyString = privateKeyString;
             //Auto login for miner, seed, launcher
             if (!string.IsNullOrEmpty(_privateKeyString) || Application.isBatchMode)

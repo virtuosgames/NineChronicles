@@ -368,13 +368,26 @@ namespace Nekoyume.Helper
                 ReadCommentHandling = JsonCommentHandling.Skip,
             };
 
-            if (File.Exists(localPath))
+            if (UnityEngine.Application.platform == UnityEngine.RuntimePlatform.Android)
             {
-                Debug.Log($"Get options from local: {localPath}");
-                return JsonSerializer.Deserialize<CommandLineOptions>(File.ReadAllText(localPath), jsonOptions);
+                // error: current no clo.json
+                UnityEngine.WWW www = new UnityEngine.WWW(Application.streamingAssetsPath+ "/clo-sample-for-no-miner.json");
+                while (!www.isDone)
+                {
+                    // wait for data load
+                }
+                return JsonSerializer.Deserialize<CommandLineOptions>(www.text, jsonOptions);
             }
+            else
+            {
+                if (File.Exists(localPath))
+                {
+                    Debug.Log($"Get options from local: {localPath}");
+                    return JsonSerializer.Deserialize<CommandLineOptions>(File.ReadAllText(localPath), jsonOptions);
+                }
 
-            Debug.LogErrorFormat("Failed to find {0}. Using default options.", localPath);
+                Debug.LogErrorFormat("Failed to find {0}. Using default options.", localPath);
+            }
             return new CommandLineOptions();
         }
 
