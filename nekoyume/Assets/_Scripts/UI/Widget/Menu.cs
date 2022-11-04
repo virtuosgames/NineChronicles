@@ -521,7 +521,7 @@ namespace Nekoyume.UI
         protected override void OnCompleteOfShowAnimationInternal()
         {
             base.OnCompleteOfShowAnimationInternal();
-            Find<DialogPopup>().Show(1, PlayTutorial);
+            //Find<DialogPopup>().Show(1, PlayTutorial);
             StartCoroutine(CoHelpPopup());
         }
 
@@ -540,6 +540,7 @@ namespace Nekoyume.UI
 
         private IEnumerator CoHelpPopup()
         {
+            yield break;
             var dialog = Find<DialogPopup>();
             while (dialog.IsActive())
             {

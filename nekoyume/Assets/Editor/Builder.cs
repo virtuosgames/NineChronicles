@@ -115,6 +115,9 @@ namespace Editor
         public static void BuildAndroidDevelopment()
         {
             Debug.Log("Build Android Development");
+            CopyJsonDataFile("TestbedSell");
+            CopyJsonDataFile("TestbedCreateAvatar");
+            Build(BuildTarget.Android, BuildOptions.Development | BuildOptions.AllowDebugging, "Android");
         }
 
         [MenuItem("Build/Development/IOS")]

@@ -168,6 +168,7 @@ namespace Nekoyume.UI.Module
 
         private IEnumerator CoMovePage()
         {
+            yield break;
             var waitInterval = new WaitForSeconds(movePageInterval);
             var contentWidth = maskTransform.rect.width;
             while (gameObject.activeSelf)

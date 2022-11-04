@@ -151,6 +151,7 @@ namespace Nekoyume.BlockChain
                 .ObserveOnMainThread()
                 .DoOnError(e =>
                 {
+                    DebugPanel.Log("ActionManager.cs 154 DoOnError");
                     Game.Game.instance.BackToNest();
                     throw HandleException(action.Id, e);
                 });

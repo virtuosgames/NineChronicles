@@ -466,7 +466,7 @@ namespace Nekoyume.BlockChain
                     eval.Action.index
                 )
             );
-            DialogPopup.DeleteDialogPlayerPrefs(avatarAddress);
+            //DialogPopup.DeleteDialogPlayerPrefs(avatarAddress);
 
             var loginDetail = Widget.Find<LoginDetail>();
             if (loginDetail && loginDetail.IsActive())

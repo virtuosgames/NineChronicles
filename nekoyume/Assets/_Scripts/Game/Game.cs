@@ -122,11 +122,13 @@ namespace Nekoyume.Game
 
             if (_options.RpcClient)
             {
+                DebugPanel.Log("game.cs 125");
                 Agent = GetComponent<RPCAgent>();
                 SubscribeRPCAgent();
             }
             else
             {
+                DebugPanel.Log("game.cs 131");
                 Agent = GetComponent<Agent>();
             }
 
@@ -165,14 +167,17 @@ namespace Nekoyume.Game
             // Initialize MainCanvas first
             MainCanvas.instance.InitializeFirst();
             // Initialize TableSheets. This should be done before initialize the Agent.
+            DebugPanel.Log("game.cs 168");
             yield return StartCoroutine(CoInitializeTableSheets());
             Debug.Log("[Game] Start() TableSheets initialized");
+            DebugPanel.Log("game.cs 171");
             yield return StartCoroutine(ResourcesHelper.CoInitialize());
             Debug.Log("[Game] Start() ResourcesHelper initialized");
             AudioController.instance.Initialize();
             Debug.Log("[Game] Start() AudioController initialized");
             yield return null;
             // Initialize Agent
+            DebugPanel.Log("game.cs 178");
             var agentInitialized = false;
             var agentInitializeSucceed = false;
             yield return StartCoroutine(
@@ -185,18 +190,21 @@ namespace Nekoyume.Game
                     }
                 )
             );
-
+            DebugPanel.Log("game.cs 191");
             yield return new WaitUntil(() => agentInitialized);
+            DebugPanel.Log("game.cs 193");
             InitializeAnalyzer();
             Analyzer.Track("Unity/Started");
             // NOTE: Create ActionManager after Agent initialized.
             ActionManager = new ActionManager(Agent);
+            DebugPanel.Log("game.cs 198");
             yield return SyncTableSheetsAsync().ToCoroutine();
             Debug.Log("[Game] Start() TableSheets synchronized");
             RxProps.Start(Agent, States, TableSheets);
             // Initialize MainCanvas second
             yield return StartCoroutine(MainCanvas.instance.InitializeSecond());
             // Initialize NineChroniclesAPIClient.
+            DebugPanel.Log("game.cs 205");
             _apiClient = new NineChroniclesAPIClient(_options.ApiServerHost);
             if (!string.IsNullOrEmpty(_options.RpcServerHost))
             {
@@ -208,6 +216,7 @@ namespace Nekoyume.Game
             WorldBossQuery.SetUrl(_options.OnBoardingHost);
 
             // Initialize Rank.SharedModel
+            DebugPanel.Log("game.cs 218");
             RankPopup.UpdateSharedModel();
             // Initialize Stage
             Stage.Initialize();
@@ -646,7 +655,7 @@ namespace Nekoyume.Game
 
                 yield break;
             }
-
+            DebugPanel.Log("game.cs 656");
             var settings = Widget.Find<UI.SettingPopup>();
             settings.UpdateSoundSettings();
             settings.UpdatePrivateKey(_options.PrivateKey);
@@ -663,7 +672,7 @@ namespace Nekoyume.Game
                 intro.Show(_options.KeyStorePath, _options.PrivateKey);
                 yield return new WaitUntil(() => loginPopup.Login);
             }
-
+            DebugPanel.Log("game.cs 673");
             yield return Agent.Initialize(
                 _options,
                 loginPopup.GetPrivateKey(),

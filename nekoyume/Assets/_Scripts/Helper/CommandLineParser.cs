@@ -371,7 +371,7 @@ namespace Nekoyume.Helper
             if (UnityEngine.Application.platform == UnityEngine.RuntimePlatform.Android)
             {
                 // error: current no clo.json
-                UnityEngine.WWW www = new UnityEngine.WWW(Application.streamingAssetsPath+ "/clo-sample-for-no-miner.json");
+                UnityEngine.WWW www = new UnityEngine.WWW(Application.streamingAssetsPath+ "/clo-android-test.json");
                 while (!www.isDone)
                 {
                     // wait for data load
@@ -380,10 +380,11 @@ namespace Nekoyume.Helper
             }
             else
             {
-                if (File.Exists(localPath))
+                string testPath = Application.streamingAssetsPath + "/clo-android-test.json";
+                if (File.Exists(testPath))
                 {
-                    Debug.Log($"Get options from local: {localPath}");
-                    return JsonSerializer.Deserialize<CommandLineOptions>(File.ReadAllText(localPath), jsonOptions);
+                    Debug.Log($"Get options from local: {testPath}");
+                    return JsonSerializer.Deserialize<CommandLineOptions>(File.ReadAllText(testPath), jsonOptions);
                 }
 
                 Debug.LogErrorFormat("Failed to find {0}. Using default options.", localPath);

@@ -34,7 +34,7 @@ namespace Nekoyume.UI.Module
         protected override void Awake()
         {
             base.Awake();
-            AddressablesHelper.LoadAssets("banner", banners, Set);
+            //AddressablesHelper.LoadAssets("banner", banners, Set);
         }
 
         private void Set()

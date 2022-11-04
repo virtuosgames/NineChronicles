@@ -280,12 +280,12 @@ namespace Nekoyume.UI
                 yield break;
             }
 
-            var dialog = Find<DialogPopup>();
-            foreach (var stageDialog in stageDialogs)
-            {
-                dialog.Show(stageDialog.DialogId);
-                yield return new WaitWhile(() => dialog.gameObject.activeSelf);
-            }
+            //var dialog = Find<DialogPopup>();
+            //foreach (var stageDialog in stageDialogs)
+            //{
+            //    dialog.Show(stageDialog.DialogId);
+            //    yield return new WaitWhile(() => dialog.gameObject.activeSelf);
+            //}
         }
 
         public void Show(Model model, bool isBoosted)

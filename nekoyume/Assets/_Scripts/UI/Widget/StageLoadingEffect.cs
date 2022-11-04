@@ -131,12 +131,12 @@ namespace Nekoyume.UI
                 yield break;
             }
 
-            var dialog = Widget.Find<DialogPopup>();
-            foreach (var stageDialog in stageDialogs)
-            {
-                dialog.Show(stageDialog.DialogId);
-                yield return new WaitWhile(() => dialog.gameObject.activeSelf);
-            }
+            //var dialog = Widget.Find<DialogPopup>();
+            //foreach (var stageDialog in stageDialogs)
+            //{
+            //    dialog.Show(stageDialog.DialogId);
+            //    yield return new WaitWhile(() => dialog.gameObject.activeSelf);
+            //}
 
             dialogEnd = true;
         }

@@ -17,14 +17,14 @@ namespace Nekoyume.UI
 
         public override void Execute(DialogPopup widget)
         {
-            duration = duration / (loops * 2.0f);
-            var seq = DOTween.Sequence();
-            for (int i = 0; i < loops; ++i)
-            {
-                seq.Append(widget.imgCharacter.transform.DOBlendableLocalMoveBy(value, duration));
-                seq.Append(widget.imgCharacter.transform.DOBlendableLocalMoveBy(-value, duration));
-            }
-            seq.Play();
+            //duration = duration / (loops * 2.0f);
+            //var seq = DOTween.Sequence();
+            //for (int i = 0; i < loops; ++i)
+            //{
+            //    seq.Append(widget.imgCharacter.transform.DOBlendableLocalMoveBy(value, duration));
+            //    seq.Append(widget.imgCharacter.transform.DOBlendableLocalMoveBy(-value, duration));
+            //}
+            //seq.Play();
         }
     }
 }

@@ -116,11 +116,13 @@ namespace Nekoyume.UI
 
         public void CreateClick()
         {
+            DebugPanel.Log("LoginDetail.cs 119 CreateClick");
             AudioController.PlayClick();
             Analyzer.Instance.Track("Unity/Create Click");
             var inputBox = Find<InputBoxPopup>();
             inputBox.CloseCallback = result =>
             {
+                DebugPanel.Log($"LoginDetail.cs 125 CreateClick result={result}");
                 if (result == ConfirmResult.Yes)
                 {
                     CreateAndLogin(inputBox.text);
@@ -148,6 +150,7 @@ namespace Nekoyume.UI
                     _costumes[ItemSubType.TailCostume][_index[ItemSubType.TailCostume]])
                 .DoOnError(e =>
                 {
+                    DebugPanel.Log("LoginDetail.cs 153 DoOnError");
                     Game.Game.PopupError(e).Forget();
                     Find<GrayLoadingScreen>().Close();
                 })

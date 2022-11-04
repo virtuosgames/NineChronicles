@@ -10,11 +10,11 @@ Material:
   m_Name: stretchyman_Material
   m_Shader: {fileID: 4800000, guid: a79d0a36ad5ba0542946e3c3317e2aa4, type: 3}
   m_ValidKeywords:
-  - _ALPHAPREMULTIPLY_VERTEX_ONLY
   - _EMISSION
   - _FIXED_NORMALS_VIEWSPACE
   - _NORMALMAP
   m_InvalidKeywords:
+  - _ALPHAPREMULTIPLY_VERTEX_ONLY
   - _USE8NEIGHBOURHOOD_ON
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0

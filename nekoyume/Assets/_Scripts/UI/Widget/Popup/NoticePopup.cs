@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using UnityEngine.UI;
 using UnityEngine;
@@ -92,15 +92,16 @@ namespace Nekoyume.UI
 
         public override void Initialize()
         {
-            Addressables.LoadAssetAsync<NoticeInfoScriptableObject>("notice").Completed +=
-                operationHandle =>
-                {
-                    if (operationHandle.IsValid())
-                    {
-                        _usingNoticeInfo = operationHandle.Result.noticeInfo;
-                    }
-                    base.Initialize();
-                };
+
+            //Addressables.LoadAssetAsync<NoticeInfoScriptableObject>("notice").Completed +=
+            //    operationHandle =>
+            //    {
+            //        if (operationHandle.IsValid())
+            //        {
+            //            _usingNoticeInfo = operationHandle.Result.noticeInfo;
+            //        }
+            //        base.Initialize();
+            //    };
         }
 
         public override void Show(bool ignoreStartAnimation = false)
