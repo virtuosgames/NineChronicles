@@ -5,6 +5,7 @@ using UnityEngine;
 using UnityEditor;
 using UnityEditor.Build.Reporting;
 using UnityEditor.Callbacks;
+using System.Collections.Generic;
 #if UNITY_STANDALONE_OSX
 using UnityEditor.OSXStandalone;
 #endif
@@ -12,9 +13,12 @@ using UnityEditor.OSXStandalone;
 namespace Editor
 {
     [ExecuteInEditMode]
-    public class Builder {
+    public class Builder
+    {
         private static readonly string PlayerName = PlayerSettings.productName;
         private const string BuildBasePath = "Build";
+        private static string m_assetBundlesPath = "AssetBundles";
+        private static string m_streamingPath = "Assets/StreamingAssets";
 
         [MenuItem("Build/Standalone/Android")]
         public static void BuildAndroidStandalone()
@@ -185,7 +189,8 @@ namespace Editor
             Debug.Log("Build Windows For QA");
             CopyJsonDataFile("TestbedSell");
             CopyJsonDataFile("TestbedCreateAvatar");
-            Build(BuildTarget.StandaloneWindows64, BuildOptions.Development | BuildOptions.AllowDebugging, "Windows", true);
+            Build(BuildTarget.StandaloneWindows64, BuildOptions.Development | BuildOptions.AllowDebugging, "Windows",
+                true);
         }
 
         private static void Build(
@@ -235,7 +240,7 @@ namespace Editor
             Debug.Log($"UpdateDefines : {isDevelopment}");
             var buildTargetGroup = EditorUserBuildSettings.selectedBuildTargetGroup;
             var preDefines = PlayerSettings.GetScriptingDefineSymbolsForGroup(buildTargetGroup);
-            var newDefines = preDefines.Split( ';' ).ToList();
+            var newDefines = preDefines.Split(';').ToList();
             const string qaDefine = "LIB9C_DEV_EXTENSIONS";
             if (isDevelopment)
             {
@@ -251,6 +256,7 @@ namespace Editor
                     newDefines.Remove(qaDefine);
                 }
             }
+
             PlayerSettings.SetScriptingDefineSymbolsForGroup(buildTargetGroup,
                 string.Join(";", newDefines.ToArray()));
             EditorApplication.ExecuteMenuItem("File/Save Project");
@@ -267,7 +273,7 @@ namespace Editor
         [PostProcessBuild(0)]
         public static void CopyNativeLibraries(BuildTarget target, string pathToBuiltProject)
         {
-            if(target == BuildTarget.Android)
+            if (target == BuildTarget.Android)
             {
                 return;
             }
@@ -283,6 +289,7 @@ namespace Editor
                     {
                         destLibPath += ".app";
                     }
+
                     destLibPath = Path.Combine(
                         destLibPath, "Contents/Resources/Data/Managed/", libDir);
                     break;
@@ -321,6 +328,67 @@ namespace Editor
             var source = Path.Combine(basePath, filename);
             var destination = Path.Combine(BuildBasePath, targetDirName, filename);
             File.Copy(source, destination, true);
+        }
+
+        [MenuItem("Build/Localization/Windows&Mac")]
+        public static void BuildLocalizationWindowsOrMac()
+        {
+            Debug.Log("Build Windows&Mac Localization");
+            BuildAssetBundle(BuildTarget.StandaloneWindows);
+        }
+
+        [MenuItem("Build/Localization/Android")]
+        public static void BuildLocalizationAndroid()
+        {
+            Debug.Log("Build Android Localization");
+            BuildAssetBundle(BuildTarget.Android);
+        }
+
+        [MenuItem("Build/Localization/IOS")]
+        public static void BuildLocalizationIphonePlayer()
+        {
+            Debug.Log("Build IOS Localization");
+            BuildAssetBundle(BuildTarget.iOS);
+        }
+
+        public static void BuildAssetBundle(BuildTarget buildTarget)
+        {
+            if (Directory.Exists(m_assetBundlesPath) == false)
+            {
+                Directory.CreateDirectory(m_assetBundlesPath);
+            }
+
+            BuildPipeline.BuildAssetBundles(m_assetBundlesPath, BuildAssetBundleOptions.UncompressedAssetBundle,
+                buildTarget);
+            DirectoryCopy(m_assetBundlesPath, m_streamingPath);
+        }
+
+        private static void DirectoryCopy(string sourceDirName, string destDirName)
+        {
+            // Get the subdirectories for the specified directory.
+            DirectoryInfo dir = new DirectoryInfo(sourceDirName);
+
+            // If the destination directory doesn't exist, create it.
+            if (!Directory.Exists(destDirName))
+            {
+                Directory.CreateDirectory(destDirName);
+            }
+
+            // Get the files in the directory and copy them to the new location.
+            FileInfo[] files = dir.GetFiles();
+            foreach (FileInfo file in files)
+            {
+                string temppath = Path.Combine(destDirName, file.Name);
+                file.CopyTo(temppath, false);
+            }
+
+
+            DirectoryInfo[] dirs = dir.GetDirectories();
+            foreach (DirectoryInfo subdir in dirs)
+            {
+                string temppath = Path.Combine(destDirName, subdir.Name);
+                DirectoryCopy(subdir.FullName, temppath);
+            }
         }
     }
 }

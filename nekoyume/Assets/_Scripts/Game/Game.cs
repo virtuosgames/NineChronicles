@@ -147,7 +147,17 @@ namespace Nekoyume.Game
             );
             var options = MessagePackSerializerOptions.Standard.WithResolver(resolver);
             MessagePackSerializer.DefaultOptions = options;
+            // Initialize Localization Config
+            var configInitialized = false;
+            StartCoroutine(Localization.Localization.instance.LoadLocalization(
+                succeed =>
+                {
+                    Debug.Log($"Config initialized.");
+                    configInitialized = true;
+                }
+            ));
 
+            yield return new WaitUntil(() => configInitialized);
 #if UNITY_EDITOR
             if (useSystemLanguage)
             {
@@ -176,6 +186,7 @@ namespace Nekoyume.Game
             AudioController.instance.Initialize();
             Debug.Log("[Game] Start() AudioController initialized");
             yield return null;
+
             // Initialize Agent
             DebugPanel.Log("game.cs 178");
             var agentInitialized = false;
@@ -655,6 +666,7 @@ namespace Nekoyume.Game
 
                 yield break;
             }
+
             DebugPanel.Log("game.cs 656");
             var settings = Widget.Find<UI.SettingPopup>();
             settings.UpdateSoundSettings();
@@ -672,6 +684,7 @@ namespace Nekoyume.Game
                 intro.Show(_options.KeyStorePath, _options.PrivateKey);
                 yield return new WaitUntil(() => loginPopup.Login);
             }
+
             DebugPanel.Log("game.cs 673");
             yield return Agent.Initialize(
                 _options,

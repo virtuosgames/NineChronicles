@@ -26,10 +26,10 @@ namespace Nekoyume.BlockChain
         public static string GenesisBlockPath()
         {
             // Android should use correct path.
-            if (Application.platform == RuntimePlatform.Android)
+            if (Application.platform == RuntimePlatform.Android
+                || Application.platform == RuntimePlatform.IPhonePlayer)
             {
-                String dataPath = Application.persistentDataPath + "/" + GenesisBlockName;
-                return dataPath;
+                return Path.Combine(Application.persistentDataPath, GenesisBlockName);
             }
 
             return BlockPath(GenesisBlockName);
@@ -55,19 +55,19 @@ namespace Nekoyume.BlockChain
         /// <returns>읽어들인 블록 객체.</returns>
         public static Block<PolymorphicAction<ActionBase>> ImportBlock(string path)
         {
-
             // read temp genesis-block
-            if (Application.platform == RuntimePlatform.Android)
+            //if (Application.platform == RuntimePlatform.Android
+            //    || Application.platform == RuntimePlatform.IPhonePlayer)
             {
-                WWW www = new WWW(Application.streamingAssetsPath + "/genesis-block");
-                while(!www.isDone)
+                List<Localization.LocalizationData> datas =
+                    Localization.Localization.instance.GetDatasByType(Localization.LocalizationType.GenesisBlock);
+                if (datas.Count > 0)
                 {
-                    //wait
-                }
-                byte[] buffer = www.bytes;
-                Bencodex.Types.Dictionary dict = (Bencodex.Types.Dictionary)_codec.Decode(buffer);
+                    byte[] buffer = datas[0].bytes;
+                    Bencodex.Types.Dictionary dict = (Bencodex.Types.Dictionary)_codec.Decode(buffer);
 
-                return BlockMarshaler.UnmarshalBlock<PolymorphicAction<ActionBase>>(dict);
+                    return BlockMarshaler.UnmarshalBlock<PolymorphicAction<ActionBase>>(dict);
+                }
             }
 
             if (File.Exists(path))
@@ -110,16 +110,16 @@ namespace Nekoyume.BlockChain
         {
             var tableSheets = Game.Game.GetTableCsvAssets();
             string goldDistributionCsvPath = Path.Combine(Application.streamingAssetsPath, "GoldDistribution.csv");
-            GoldDistribution[] goldDistributions = GoldDistribution.LoadInDescendingEndBlockOrder(goldDistributionCsvPath);
+            GoldDistribution[] goldDistributions =
+                GoldDistribution.LoadInDescendingEndBlockOrder(goldDistributionCsvPath);
             return Nekoyume.BlockHelper.MineGenesisBlock(
                 tableSheets,
                 goldDistributions,
                 pendingActivationStates,
                 new AdminState(new Address("F9A15F870701268Bd7bBeA6502eB15F4997f32f9"), 1500000),
-               isActivateAdminAddress: false);
+                isActivateAdminAddress: false);
         }
 
         public static string BlockPath(string filename) => Path.Combine(Application.streamingAssetsPath, filename);
-
     }
 }

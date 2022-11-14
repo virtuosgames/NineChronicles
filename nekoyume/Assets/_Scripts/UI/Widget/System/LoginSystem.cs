@@ -70,7 +70,8 @@ namespace Nekoyume.UI
         protected override void Awake()
         {
             // Default KeyStore in android is invalid, we should redefine it.
-            if (UnityEngine.Application.platform == UnityEngine.RuntimePlatform.Android)
+            if (UnityEngine.Application.platform == UnityEngine.RuntimePlatform.Android
+                || UnityEngine.Application.platform == UnityEngine.RuntimePlatform.IPhonePlayer)
             {
                 string dataPath = Application.persistentDataPath;
                 KeyStore = new Web3KeyStore(dataPath + "/KeyStore");
@@ -103,6 +104,7 @@ namespace Nekoyume.UI
             base.Awake();
             SubmitWidget = Submit;
         }
+
         private void SubscribeState(States states)
         {
             titleText.gameObject.SetActive(true);
@@ -196,6 +198,7 @@ namespace Nekoyume.UI
                 default:
                     throw new ArgumentOutOfRangeException(nameof(states), states, null);
             }
+
             UpdateSubmitButton();
         }
 
@@ -229,8 +232,8 @@ namespace Nekoyume.UI
             var passPhrase = passPhraseField.text;
             var retyped = retypeField.text;
             return !(string.IsNullOrEmpty(passPhrase) || string.IsNullOrEmpty(retyped)) &&
-                passPhrase == retyped &&
-                CheckPassWord(passPhrase);
+                   passPhrase == retyped &&
+                   CheckPassWord(passPhrase);
         }
 
         private void CheckLogin()
@@ -244,6 +247,7 @@ namespace Nekoyume.UI
                 loginWarning.SetActive(true);
                 return;
             }
+
             Login = !(_privateKey is null);
             if (Login)
             {
@@ -254,7 +258,6 @@ namespace Nekoyume.UI
                 loginWarning.SetActive(true);
                 loginField.text = string.Empty;
             }
-
         }
 
         public void Submit()
@@ -294,6 +297,7 @@ namespace Nekoyume.UI
                         findPrivateKeyWarning.SetActive(true);
                         findPassphraseField.text = null;
                     }
+
                     break;
                 }
                 case States.ResetPassphrase:
@@ -326,7 +330,8 @@ namespace Nekoyume.UI
                 _capturedImage.Show();
             }
 
-            if (UnityEngine.Application.platform == UnityEngine.RuntimePlatform.Android)
+            if (UnityEngine.Application.platform == UnityEngine.RuntimePlatform.Android
+                || UnityEngine.Application.platform == UnityEngine.RuntimePlatform.IPhonePlayer)
             {
                 string dataPath = Application.persistentDataPath;
                 KeyStore = path is null ? new Web3KeyStore(dataPath + "/KeyStore") : new Web3KeyStore(path);
@@ -385,6 +390,7 @@ namespace Nekoyume.UI
                     case States.Failed:
                         break;
                 }
+
                 base.Show();
             }
         }
@@ -543,8 +549,7 @@ namespace Nekoyume.UI
             // 가져온 비밀키를 키스토어에 넣기 전에, 혹시 같은 주소에 대한 키를 지운다.  (아무튼 기능명이 "reset"이라...)
             // 참고로 본 함수 호출되기 전에 CheckPassphrase()에서 먼저 같은 키의 비밀키가 있는지 확인한다. "찾기"가 아니라 "추가"니까, 없으면 오류가 먼저 나게 되어 있음.
             Address address = pk.ToAddress();
-            Guid[] keyIdsToRemove = KeyStore.List().
-                Where(pair => pair.Item2.Address.Equals(address))
+            Guid[] keyIdsToRemove = KeyStore.List().Where(pair => pair.Item2.Address.Equals(address))
                 .Select(pair => pair.Item1).ToArray();
             foreach (Guid keyIdToRemove in keyIdsToRemove)
             {
@@ -583,8 +588,8 @@ namespace Nekoyume.UI
             var ms = new MemoryStream();
             image.SaveAsPng(ms);
             var buffer = new byte[ms.Length];
-            ms.Read(buffer,0,buffer.Length);
-            var t = new Texture2D(8,8);
+            ms.Read(buffer, 0, buffer.Length);
+            var t = new Texture2D(8, 8);
             if (t.LoadImage(ms.ToArray()))
             {
                 var sprite = Sprite.Create(t, new Rect(0, 0, t.width, t.height), Vector2.zero);

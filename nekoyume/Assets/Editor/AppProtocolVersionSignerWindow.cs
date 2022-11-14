@@ -174,7 +174,8 @@ namespace Editor
 
         void FillAttributes()
         {
-            if (UnityEngine.Application.platform == UnityEngine.RuntimePlatform.Android)
+            if (UnityEngine.Application.platform == UnityEngine.RuntimePlatform.Android
+                || UnityEngine.Application.platform == UnityEngine.RuntimePlatform.IPhonePlayer)
             {
                 string dataPath = Application.persistentDataPath;
                 _keyStore = new Web3KeyStore(dataPath + "/KeyStore");
@@ -207,7 +208,7 @@ namespace Editor
             }
             else
             {
-                _privateKeyOptions = new[] {"No private key; create one first:"};
+                _privateKeyOptions = new[] { "No private key; create one first:" };
             }
         }
 

@@ -177,25 +177,20 @@ namespace Nekoyume.L10n
 
         public static IReadOnlyDictionary<string, string> GetDictionary(LanguageType languageType)
         {
-            if (UnityEngine.Application.platform == UnityEngine.RuntimePlatform.Android)
+            Dictionary<string, string> dictionary = new Dictionary<string, string>();
+            List<Localization.LocalizationData> datas =
+                Localization.Localization.instance.GetDatasByType(Localization.LocalizationType.CsvCfg);
+            if (datas.Count > 0)
             {
-                WWW directory = new WWW(CsvFilesRootDirectoryPath + "/DirectoryForAndroid.txt");
-                while (!directory.isDone)
+                for (int i = 0; i < datas.Count; ++i)
                 {
-                    // wait for load
-                }
-                String[] fileNames = directory.text.Split("\r\n");
-
-                Dictionary<string, string> dictionary = new Dictionary<string, string>();
-                foreach (String fileName in fileNames)
-                {
-                    String fullName = CsvFilesRootDirectoryPath + "/" + fileName;
-                    WWW csvFile = new WWW(fullName);
-                    while (!csvFile.isDone)
+                    if (datas[i].name.Contains("GoldDistribution"))
                     {
-                        // wait for load
+                        continue;
                     }
-                    StreamReader streamReader = new StreamReader(new MemoryStream(csvFile.bytes), System.Text.Encoding.Default);
+
+                    StreamReader streamReader =
+                        new StreamReader(new MemoryStream(datas[i].bytes), System.Text.Encoding.Default);
                     CsvReader csvReader = new CsvReader((TextReader)streamReader, CultureInfo.InvariantCulture);
 
                     csvReader.Configuration.PrepareHeaderForMatch =
@@ -228,7 +223,7 @@ namespace Nekoyume.L10n
                             if (dictionary.ContainsKey(key))
                             {
                                 throw new L10nAlreadyContainsKeyException(
-                                    $"key: {key}, recordsIndex: {recordsIndex}, csvFileInfo: {fullName}");
+                                    $"key: {key}, recordsIndex: {recordsIndex}, csvFileInfo: {datas[i].name}");
                             }
 
                             dictionary.Add(key, value);
@@ -237,73 +232,140 @@ namespace Nekoyume.L10n
                     }
                     catch (CsvHelper.MissingFieldException e)
                     {
-                        Debug.LogWarning($"`{fileName}` file has empty field.\n{e}");
-                    }
-
-                }
-
-                return dictionary;
-            }
-            else
-            {
-                if (!Directory.Exists(CsvFilesRootDirectoryPath))
-                {
-                    throw new DirectoryNotFoundException(CsvFilesRootDirectoryPath);
-                }
-
-                var dictionary = new Dictionary<string, string>();
-                var csvFileInfos = new DirectoryInfo(CsvFilesRootDirectoryPath).GetFiles("*.csv");
-                foreach (var csvFileInfo in csvFileInfos)
-                {
-                    using (var streamReader = new StreamReader(csvFileInfo.FullName))
-                    using (var csvReader = new CsvReader(streamReader, CultureInfo.InvariantCulture))
-                    {
-                        csvReader.Configuration.PrepareHeaderForMatch =
-                            (header, index) => header.ToLower();
-                        var records = csvReader.GetRecords<L10nCsvModel>();
-                        var recordsIndex = 0;
-                        try
-                        {
-                            foreach (var record in records)
-                            {
-#if TEST_LOG
-                        Debug.Log($"{csvFileInfo.Name}: {recordsIndex}");
-#endif
-                                var key = record.Key;
-                                if (string.IsNullOrEmpty(key))
-                                {
-                                    recordsIndex++;
-                                    continue;
-                                }
-
-                                var value = (string)typeof(L10nCsvModel)
-                                    .GetProperty(languageType.ToString())?
-                                    .GetValue(record);
-
-                                if (string.IsNullOrEmpty(value))
-                                {
-                                    value = record.English;
-                                }
-
-                                if (dictionary.ContainsKey(key))
-                                {
-                                    throw new L10nAlreadyContainsKeyException(
-                                        $"key: {key}, recordsIndex: {recordsIndex}, csvFileInfo: {csvFileInfo.FullName}");
-                                }
-
-                                dictionary.Add(key, value);
-                                recordsIndex++;
-                            }
-                        }
-                        catch (CsvHelper.MissingFieldException e)
-                        {
-                            Debug.LogWarning($"`{csvFileInfo.Name}` file has empty field.\n{e}");
-                        }
+                        Debug.LogWarning($"`{datas[i].name}` file has empty field.\n{e}");
                     }
                 }
-
-                return dictionary;
             }
+
+            return dictionary;
+//            if (UnityEngine.Application.platform == UnityEngine.RuntimePlatform.Android)
+//            {
+
+            //                WWW directory = new WWW(CsvFilesRootDirectoryPath + "/DirectoryForAndroid.txt");
+            //                while (!directory.isDone)
+            //                {
+            //                    // wait for load
+            //                }
+            //                String[] fileNames = directory.text.Split("\r\n");
+
+            //                Dictionary<string, string> dictionary = new Dictionary<string, string>();
+            //                foreach (String fileName in fileNames)
+            //                {
+            //                    String fullName = CsvFilesRootDirectoryPath + "/" + fileName;
+            //                    WWW csvFile = new WWW(fullName);
+            //                    while (!csvFile.isDone)
+            //                    {
+            //                        // wait for load
+            //                    }
+            //                    StreamReader streamReader = new StreamReader(new MemoryStream(csvFile.bytes), System.Text.Encoding.Default);
+            //                    CsvReader csvReader = new CsvReader((TextReader)streamReader, CultureInfo.InvariantCulture);
+
+            //                    csvReader.Configuration.PrepareHeaderForMatch =
+            //                        (header, index) => header.ToLower();
+            //                    var records = csvReader.GetRecords<L10nCsvModel>();
+            //                    var recordsIndex = 0;
+            //                    try
+            //                    {
+            //                        foreach (var record in records)
+            //                        {
+            //#if TEST_LOG
+            //                        Debug.Log($"{fileName}: {recordsIndex}");
+            //#endif
+            //                            var key = record.Key;
+            //                            if (string.IsNullOrEmpty(key))
+            //                            {
+            //                                recordsIndex++;
+            //                                continue;
+            //                            }
+
+            //                            var value = (string)typeof(L10nCsvModel)
+            //                                .GetProperty(languageType.ToString())?
+            //                                .GetValue(record);
+
+            //                            if (string.IsNullOrEmpty(value))
+            //                            {
+            //                                value = record.English;
+            //                            }
+
+            //                            if (dictionary.ContainsKey(key))
+            //                            {
+            //                                throw new L10nAlreadyContainsKeyException(
+            //                                    $"key: {key}, recordsIndex: {recordsIndex}, csvFileInfo: {fullName}");
+            //                            }
+
+            //                            dictionary.Add(key, value);
+            //                            recordsIndex++;
+            //                        }
+            //                    }
+            //                    catch (CsvHelper.MissingFieldException e)
+            //                    {
+            //                        Debug.LogWarning($"`{fileName}` file has empty field.\n{e}");
+            //                    }
+
+            //                }
+
+            //                return dictionary;
+            //            }
+            //            else
+            //            {
+            //                if (!Directory.Exists(CsvFilesRootDirectoryPath))
+            //                {
+            //                    throw new DirectoryNotFoundException(CsvFilesRootDirectoryPath);
+            //                }
+
+            //                var dictionary = new Dictionary<string, string>();
+            //                var csvFileInfos = new DirectoryInfo(CsvFilesRootDirectoryPath).GetFiles("*.csv");
+            //                foreach (var csvFileInfo in csvFileInfos)
+            //                {
+            //                    using (var streamReader = new StreamReader(csvFileInfo.FullName))
+            //                    using (var csvReader = new CsvReader(streamReader, CultureInfo.InvariantCulture))
+            //                    {
+            //                        csvReader.Configuration.PrepareHeaderForMatch =
+            //                            (header, index) => header.ToLower();
+            //                        var records = csvReader.GetRecords<L10nCsvModel>();
+            //                        var recordsIndex = 0;
+            //                        try
+            //                        {
+            //                            foreach (var record in records)
+            //                            {
+            //#if TEST_LOG
+            //                        Debug.Log($"{csvFileInfo.Name}: {recordsIndex}");
+            //#endif
+            //                                var key = record.Key;
+            //                                if (string.IsNullOrEmpty(key))
+            //                                {
+            //                                    recordsIndex++;
+            //                                    continue;
+            //                                }
+
+            //                                var value = (string)typeof(L10nCsvModel)
+            //                                    .GetProperty(languageType.ToString())?
+            //                                    .GetValue(record);
+
+            //                                if (string.IsNullOrEmpty(value))
+            //                                {
+            //                                    value = record.English;
+            //                                }
+
+            //                                if (dictionary.ContainsKey(key))
+            //                                {
+            //                                    throw new L10nAlreadyContainsKeyException(
+            //                                        $"key: {key}, recordsIndex: {recordsIndex}, csvFileInfo: {csvFileInfo.FullName}");
+            //                                }
+
+            //                                dictionary.Add(key, value);
+            //                                recordsIndex++;
+            //                            }
+            //                        }
+            //                        catch (CsvHelper.MissingFieldException e)
+            //                        {
+            //                            Debug.LogWarning($"`{csvFileInfo.Name}` file has empty field.\n{e}");
+            //                        }
+            //                    }
+            //                }
+
+            //                return dictionary;
+            //            }
         }
 
         #region Localize
