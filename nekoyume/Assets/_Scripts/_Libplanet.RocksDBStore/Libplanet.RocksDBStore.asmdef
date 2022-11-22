@@ -1,0 +1,16 @@
+{
+    "name": "Libplanet.RocksDBStore",
+    "rootNamespace": "",
+    "references": [
+        "GUID:62978578bfe6cbb4589d5d7a0c5dd086"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": true,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

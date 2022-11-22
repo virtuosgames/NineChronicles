@@ -109,8 +109,14 @@ namespace Nekoyume.Game
         protected override void Awake()
         {
             Debug.Log("[Game] Awake() invoked");
-
-            Application.targetFrameRate = 60;
+            if(Application.platform == RuntimePlatform.Android)
+            {
+                Application.targetFrameRate = 30;
+            }
+            else
+            {
+                Application.targetFrameRate = 60;
+            }
             Application.SetStackTraceLogType(LogType.Log, StackTraceLogType.None);
             base.Awake();
 
@@ -122,11 +128,13 @@ namespace Nekoyume.Game
 
             if (_options.RpcClient)
             {
+                Debug.Log("game.cs 125");
                 Agent = GetComponent<RPCAgent>();
                 SubscribeRPCAgent();
             }
             else
             {
+                Debug.Log("game.cs 131");
                 Agent = GetComponent<Agent>();
             }
 
@@ -138,6 +146,9 @@ namespace Nekoyume.Game
 
         private IEnumerator Start()
         {
+            // fix android can't use www in sub thread
+            Lib9c.DevExtensions.TestbedHelper.LoadTestbedCreateAvatarForQA();
+
             Debug.Log("[Game] Start() invoked");
             var resolver = MessagePack.Resolvers.CompositeResolver.Create(
                 NineChroniclesResolver.Instance,
@@ -165,14 +176,17 @@ namespace Nekoyume.Game
             // Initialize MainCanvas first
             MainCanvas.instance.InitializeFirst();
             // Initialize TableSheets. This should be done before initialize the Agent.
+            Debug.Log("game.cs 168");
             yield return StartCoroutine(CoInitializeTableSheets());
             Debug.Log("[Game] Start() TableSheets initialized");
+            Debug.Log("game.cs 171");
             yield return StartCoroutine(ResourcesHelper.CoInitialize());
             Debug.Log("[Game] Start() ResourcesHelper initialized");
             AudioController.instance.Initialize();
             Debug.Log("[Game] Start() AudioController initialized");
             yield return null;
             // Initialize Agent
+            Debug.Log("game.cs 178");
             var agentInitialized = false;
             var agentInitializeSucceed = false;
             yield return StartCoroutine(
@@ -185,18 +199,21 @@ namespace Nekoyume.Game
                     }
                 )
             );
-
+            Debug.Log("game.cs 191");
             yield return new WaitUntil(() => agentInitialized);
+            Debug.Log("game.cs 193");
             InitializeAnalyzer();
             Analyzer.Track("Unity/Started");
             // NOTE: Create ActionManager after Agent initialized.
             ActionManager = new ActionManager(Agent);
+            Debug.Log("game.cs 198");
             yield return SyncTableSheetsAsync().ToCoroutine();
             Debug.Log("[Game] Start() TableSheets synchronized");
             RxProps.Start(Agent, States, TableSheets);
             // Initialize MainCanvas second
             yield return StartCoroutine(MainCanvas.instance.InitializeSecond());
             // Initialize NineChroniclesAPIClient.
+            Debug.Log("game.cs 205");
             _apiClient = new NineChroniclesAPIClient(_options.ApiServerHost);
             if (!string.IsNullOrEmpty(_options.RpcServerHost))
             {
@@ -208,6 +225,7 @@ namespace Nekoyume.Game
             WorldBossQuery.SetUrl(_options.OnBoardingHost);
 
             // Initialize Rank.SharedModel
+            Debug.Log("game.cs 218");
             RankPopup.UpdateSharedModel();
             // Initialize Stage
             Stage.Initialize();
@@ -646,7 +664,7 @@ namespace Nekoyume.Game
 
                 yield break;
             }
-
+            Debug.Log("game.cs 656");
             var settings = Widget.Find<UI.SettingPopup>();
             settings.UpdateSoundSettings();
             settings.UpdatePrivateKey(_options.PrivateKey);
@@ -663,7 +681,7 @@ namespace Nekoyume.Game
                 intro.Show(_options.KeyStorePath, _options.PrivateKey);
                 yield return new WaitUntil(() => loginPopup.Login);
             }
-
+            Debug.Log("game.cs 673");
             yield return Agent.Initialize(
                 _options,
                 loginPopup.GetPrivateKey(),

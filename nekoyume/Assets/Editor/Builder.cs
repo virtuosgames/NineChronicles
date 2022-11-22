@@ -16,6 +16,18 @@ namespace Editor
         private static readonly string PlayerName = PlayerSettings.productName;
         private const string BuildBasePath = "Build";
 
+        [MenuItem("Build/Standalone/Android")]
+        public static void BuildAndroidStandalone()
+        {
+            Debug.Log("Build Android");
+        }
+
+        [MenuItem("Build/Standalone/IOS")]
+        public static void BuildIOSStandalone()
+        {
+            Debug.Log("Build IOS");
+        }
+
         [MenuItem("Build/Standalone/Windows + macOS + Linux")]
         public static void BuildAll()
         {
@@ -97,6 +109,21 @@ namespace Editor
         {
             Debug.Log("Build Windows Headless");
             Build(BuildTarget.StandaloneWindows64, BuildOptions.EnableHeadlessMode, "WindowsHeadless");
+        }
+
+        [MenuItem("Build/Development/Android")]
+        public static void BuildAndroidDevelopment()
+        {
+            Debug.Log("Build Android Development");
+            CopyJsonDataFile("TestbedSell");
+            CopyJsonDataFile("TestbedCreateAvatar");
+            Build(BuildTarget.Android, BuildOptions.Development | BuildOptions.AllowDebugging, "Android");
+        }
+
+        [MenuItem("Build/Development/IOS")]
+        public static void BuildIOSDevelopment()
+        {
+            Debug.Log("Build IOS Development");
         }
 
         [MenuItem("Build/Development/Windows + macOS + Linux")]
@@ -240,6 +267,11 @@ namespace Editor
         [PostProcessBuild(0)]
         public static void CopyNativeLibraries(BuildTarget target, string pathToBuiltProject)
         {
+            if(target == BuildTarget.Android)
+            {
+                return;
+            }
+
             var binaryName = Path.GetFileNameWithoutExtension(pathToBuiltProject);
             var destLibPath = pathToBuiltProject;
             var libDir = "runtimes";

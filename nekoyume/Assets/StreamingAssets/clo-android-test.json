@@ -1,0 +1,6 @@
+{
+    "NoMiner": false,
+    "RpcClient": false,
+	"peers": [],
+	"development":false,
+}

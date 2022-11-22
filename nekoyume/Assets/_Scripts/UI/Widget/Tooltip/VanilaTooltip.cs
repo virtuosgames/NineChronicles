@@ -27,6 +27,11 @@ namespace Nekoyume.UI.Module
             base.Show();
         }
 
+        public void HideTooltip()
+        {
+            Widget.Find<VanilaTooltip>().Close();
+        }
+
         public void SetSize(float width, float height)
         {
             panelImage.rectTransform.sizeDelta = new Vector2(width, height);
