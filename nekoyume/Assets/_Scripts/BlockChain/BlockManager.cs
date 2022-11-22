@@ -26,9 +26,9 @@ namespace Nekoyume.BlockChain
         public static string GenesisBlockPath()
         {
             // Android should use correct path.
-            if (Application.platform == RuntimePlatform.Android)
+            if (Platform.IsMobilePlatform())
             {
-                String dataPath = Application.persistentDataPath + "/" + GenesisBlockName;
+                String dataPath = Platform.GetPersistentDataPath(GenesisBlockName);
                 return dataPath;
             }
 
@@ -55,15 +55,15 @@ namespace Nekoyume.BlockChain
         /// <returns>읽어들인 블록 객체.</returns>
         public static Block<PolymorphicAction<ActionBase>> ImportBlock(string path)
         {
-
             // read temp genesis-block
-            if (Application.platform == RuntimePlatform.Android)
+            if (Platform.IsMobilePlatform())
             {
-                WWW www = new WWW(Application.streamingAssetsPath + "/genesis-block");
-                while(!www.isDone)
+                WWW www = new WWW(Platform.GetStreamingAssetsPath("genesis-block"));
+                while (!www.isDone)
                 {
                     //wait
                 }
+
                 byte[] buffer = www.bytes;
                 Bencodex.Types.Dictionary dict = (Bencodex.Types.Dictionary)_codec.Decode(buffer);
 
@@ -109,17 +109,17 @@ namespace Nekoyume.BlockChain
             PendingActivationState[] pendingActivationStates)
         {
             var tableSheets = Game.Game.GetTableCsvAssets();
-            string goldDistributionCsvPath = Path.Combine(Application.streamingAssetsPath, "GoldDistribution.csv");
-            GoldDistribution[] goldDistributions = GoldDistribution.LoadInDescendingEndBlockOrder(goldDistributionCsvPath);
+            string goldDistributionCsvPath = Platform.GetStreamingAssetsPath("GoldDistribution.csv");
+            GoldDistribution[] goldDistributions =
+                GoldDistribution.LoadInDescendingEndBlockOrder(goldDistributionCsvPath);
             return Nekoyume.BlockHelper.MineGenesisBlock(
                 tableSheets,
                 goldDistributions,
                 pendingActivationStates,
                 new AdminState(new Address("F9A15F870701268Bd7bBeA6502eB15F4997f32f9"), 1500000),
-               isActivateAdminAddress: false);
+                isActivateAdminAddress: false);
         }
 
-        public static string BlockPath(string filename) => Path.Combine(Application.streamingAssetsPath, filename);
-
+        public static string BlockPath(string filename) => Platform.GetStreamingAssetsPath(filename);
     }
 }

@@ -109,14 +109,15 @@ namespace Nekoyume.Game
         protected override void Awake()
         {
             Debug.Log("[Game] Awake() invoked");
-            if(Application.platform == RuntimePlatform.Android)
+            if (Platform.IsMobilePlatform())
             {
-                Application.targetFrameRate = 30;
+                Application.targetFrameRate = 60;
             }
             else
             {
                 Application.targetFrameRate = 60;
             }
+
             Application.SetStackTraceLogType(LogType.Log, StackTraceLogType.None);
             base.Awake();
 
@@ -664,6 +665,7 @@ namespace Nekoyume.Game
 
                 yield break;
             }
+
             Debug.Log("game.cs 656");
             var settings = Widget.Find<UI.SettingPopup>();
             settings.UpdateSoundSettings();
@@ -681,6 +683,7 @@ namespace Nekoyume.Game
                 intro.Show(_options.KeyStorePath, _options.PrivateKey);
                 yield return new WaitUntil(() => loginPopup.Login);
             }
+
             Debug.Log("game.cs 673");
             yield return Agent.Initialize(
                 _options,

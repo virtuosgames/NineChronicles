@@ -120,7 +120,8 @@ namespace Nekoyume.Helper
             }
         }
 
-        [Option("ice-servers", Required = false, HelpText = "STUN/TURN servers to use. (Usage: --ice-servers serverA serverB ...)")]
+        [Option("ice-servers", Required = false,
+            HelpText = "STUN/TURN servers to use. (Usage: --ice-servers serverA serverB ...)")]
         public IEnumerable<string> IceServers
         {
             get => iceServers;
@@ -259,8 +260,8 @@ namespace Nekoyume.Helper
         }
 
         [Option('V', "app-protocol-version",
-                Required = false,
-                HelpText = "App protocol version token.")]
+            Required = false,
+            HelpText = "App protocol version token.")]
         public string AppProtocolVersion
         {
             get => appProtocolVersion;
@@ -272,8 +273,8 @@ namespace Nekoyume.Helper
         }
 
         [Option('T', "trusted-app-protocol-version-signer",
-                Required = false,
-                HelpText = "Trustworthy signers who claim new app protocol versions")]
+            Required = false,
+            HelpText = "Trustworthy signers who claim new app protocol versions")]
         public IEnumerable<string> TrustedAppProtocolVersionSigners
         {
             get => trustedAppProtocolVersionSigners;
@@ -368,19 +369,20 @@ namespace Nekoyume.Helper
                 ReadCommentHandling = JsonCommentHandling.Skip,
             };
 
-            if (UnityEngine.Application.platform == UnityEngine.RuntimePlatform.Android)
+            if (Platform.IsMobilePlatform())
             {
                 // error: current no clo.json
-                UnityEngine.WWW www = new UnityEngine.WWW(Application.streamingAssetsPath+ "/clo-android-test.json");
+                UnityEngine.WWW www = new UnityEngine.WWW(Platform.GetStreamingAssetsPath("clo-android-test.json"));
                 while (!www.isDone)
                 {
                     // wait for data load
                 }
+
                 return JsonSerializer.Deserialize<CommandLineOptions>(www.text, jsonOptions);
             }
             else
             {
-                string testPath = Application.streamingAssetsPath + "/clo-android-test.json";
+                string testPath = Platform.GetStreamingAssetsPath("clo-android-test.json");
                 if (File.Exists(testPath))
                 {
                     Debug.Log($"Get options from local: {testPath}");
@@ -389,6 +391,7 @@ namespace Nekoyume.Helper
 
                 Debug.LogErrorFormat("Failed to find {0}. Using default options.", localPath);
             }
+
             return new CommandLineOptions();
         }
 
@@ -437,6 +440,7 @@ namespace Nekoyume.Helper
                 {
                     writer.WriteStringValue(el);
                 }
+
                 writer.WriteEndArray();
             }
         }
@@ -460,7 +464,7 @@ namespace Nekoyume.Helper
             result.WithNotParsed(
                 errors =>
                     Debug.Log(HelpText.AutoBuild(result)
-            ));
+                    ));
 
             return null;
         }

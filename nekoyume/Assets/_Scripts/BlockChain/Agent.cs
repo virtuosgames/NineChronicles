@@ -497,6 +497,7 @@ namespace Nekoyume.BlockChain
                             level);
                     }
                 }
+
                 Debug.Log("Agent.cs InitAgent 499");
                 ActionRenderHandler.Instance.GoldCurrency = goldCurrency;
                 if (await GetStateAsync(GameConfigState.Address) is Dictionary configDict)
@@ -507,6 +508,7 @@ namespace Nekoyume.BlockChain
                 {
                     throw new FailedToInstantiateStateException<GameConfigState>();
                 }
+
                 Debug.Log("Agent.cs InitAgent 509");
                 // 그리고 모든 액션에 대한 랜더와 언랜더를 핸들링하기 시작한다.
                 BlockRenderHandler.Instance.Start(BlockRenderer);
@@ -805,6 +807,7 @@ namespace Nekoyume.BlockChain
                     index - existingBlocks
                 );
             }
+
             Debug.Log("Agent.cs CoSwarmRunner 802");
             Debug.Log("PreloadEndedAsync=" + PreloadEndedAsync == null ? "null" : "ok");
 
@@ -970,7 +973,7 @@ namespace Nekoyume.BlockChain
 
         private void LoadQueuedActions()
         {
-            var path = Path.Combine(Application.persistentDataPath, QueuedActionsFileName);
+            var path = Platform.GetPersistentDataPath(QueuedActionsFileName);
             if (File.Exists(path))
             {
                 var actionsListBytes = File.ReadAllBytes(path);
@@ -993,8 +996,7 @@ namespace Nekoyume.BlockChain
             if (_queuedActions.Any())
             {
                 List<GameAction> actionsList;
-
-                var path = Path.Combine(Application.persistentDataPath, QueuedActionsFileName);
+                var path = Platform.GetPersistentDataPath(QueuedActionsFileName);
                 if (!File.Exists(path))
                 {
                     Debug.Log("Create new queuedActions list.");

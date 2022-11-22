@@ -177,13 +177,14 @@ namespace Nekoyume.L10n
 
         public static IReadOnlyDictionary<string, string> GetDictionary(LanguageType languageType)
         {
-            if (UnityEngine.Application.platform == UnityEngine.RuntimePlatform.Android)
+            if (Platform.IsMobilePlatform())
             {
                 WWW directory = new WWW(CsvFilesRootDirectoryPath + "/DirectoryForAndroid.txt");
                 while (!directory.isDone)
                 {
                     // wait for load
                 }
+
                 String[] fileNames = directory.text.Split("\r\n");
 
                 Dictionary<string, string> dictionary = new Dictionary<string, string>();
@@ -195,7 +196,9 @@ namespace Nekoyume.L10n
                     {
                         // wait for load
                     }
-                    StreamReader streamReader = new StreamReader(new MemoryStream(csvFile.bytes), System.Text.Encoding.Default);
+
+                    StreamReader streamReader =
+                        new StreamReader(new MemoryStream(csvFile.bytes), System.Text.Encoding.Default);
                     CsvReader csvReader = new CsvReader((TextReader)streamReader, CultureInfo.InvariantCulture);
 
                     csvReader.Configuration.PrepareHeaderForMatch =
@@ -239,7 +242,6 @@ namespace Nekoyume.L10n
                     {
                         Debug.LogWarning($"`{fileName}` file has empty field.\n{e}");
                     }
-
                 }
 
                 return dictionary;
