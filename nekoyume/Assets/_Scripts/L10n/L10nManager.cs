@@ -174,6 +174,44 @@ namespace Nekoyume.L10n
         }
 
         #endregion
+        /// <summary>
+        /// Get records manually using getField() with names without using Convert CSV rows into class objects that not support in IL2CPP.
+        /// </summary>
+        /// <param name="csvReader"></param>
+        /// <returns></returns>
+        public static List<L10nCsvModel> GetL10nCsvModelRecords(CsvReader csvReader)
+        {
+            var records = new List<L10nCsvModel>();
+            csvReader.Read();
+            csvReader.ReadHeader();
+            while (csvReader.Read())
+            {
+                var record = new L10nCsvModel
+                {
+                    Key = csvReader.GetField<string>("Key"),
+                    English = csvReader.GetField<string>("English"),
+                    Korean = csvReader.GetField<string>("Korean"),
+                    PortugueseBrazil = csvReader.GetField<string>("PortugueseBrazil"),
+                    Portuguese = csvReader.GetField<string>("Portuguese"),
+                    Japanese = csvReader.GetField<string>("Japanese"),
+                    German = csvReader.GetField<string>("German"),
+                    Spanish = csvReader.GetField<string>("Spanish"),
+                    Thai = csvReader.GetField<string>("Thai"),
+                    Polish = csvReader.GetField<string>("Polish"),
+                    Lithuanian = csvReader.GetField<string>("Lithuanian"),
+                    Dutch = csvReader.GetField<string>("Dutch"),
+                    Indonesian = csvReader.GetField<string>("Indonesian"),
+                    French = csvReader.GetField<string>("French"),
+                    Russian = csvReader.GetField<string>("Russian"),
+                    Cambodian = csvReader.GetField<string>("Cambodian"),
+                    Urdu = csvReader.GetField<string>("Urdu"),
+                    ChineseSimplified = csvReader.GetField<string>("ChineseSimplified"),
+                    Hungarian = csvReader.GetField<string>("Hungarian")
+                };
+                records.Add(record);
+            }
+            return records;
+        }
 
         public static IReadOnlyDictionary<string, string> GetDictionary(LanguageType languageType)
         {
@@ -191,7 +229,11 @@ namespace Nekoyume.L10n
                 {
                     csvReader.Configuration.PrepareHeaderForMatch =
                         (header, index) => header.ToLower();
+#if ENABLE_IL2CPP
+                    var records = GetL10nCsvModelRecords(csvReader);
+#else
                     var records = csvReader.GetRecords<L10nCsvModel>();
+#endif
                     var recordsIndex = 0;
                     try
                     {
