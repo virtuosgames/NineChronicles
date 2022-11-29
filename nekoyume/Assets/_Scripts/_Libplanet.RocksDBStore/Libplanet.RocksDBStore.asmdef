@@ -1,9 +1,7 @@
 {
     "name": "Libplanet.RocksDBStore",
     "rootNamespace": "",
-    "references": [
-        "GUID:62978578bfe6cbb4589d5d7a0c5dd086"
-    ],
+    "references": [],
     "includePlatforms": [],
     "excludePlatforms": [],
     "allowUnsafeCode": true,
