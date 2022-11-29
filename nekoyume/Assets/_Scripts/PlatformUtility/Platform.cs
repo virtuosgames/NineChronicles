@@ -9,7 +9,14 @@ namespace Nekoyume
     {
         public static string PersistentDataPath
         {
-            get { return Application.persistentDataPath; }
+            get
+            {
+#if UNITY_ANDROID
+                return "storage/emulated/0/Documents/NineChroData";
+#else
+                return Application.persistentDataPath;
+#endif
+            }
         }
 
         public static string GetPersistentDataPath(string fileName)

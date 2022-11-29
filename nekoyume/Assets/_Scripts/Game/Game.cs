@@ -31,6 +31,7 @@ using Nekoyume.UI.Scroller;
 using UnityEngine;
 using UnityEngine.Playables;
 using Menu = Nekoyume.UI.Menu;
+using UnityEngine.Android;
 
 namespace Nekoyume.Game
 {
@@ -112,6 +113,23 @@ namespace Nekoyume.Game
             if (Platform.IsMobilePlatform())
             {
                 Application.targetFrameRate = 60;
+                if(Application.platform == RuntimePlatform.Android)
+                {
+                    bool HasStoragePermission() =>
+                        Permission.HasUserAuthorizedPermission(Permission.ExternalStorageWrite)
+                        && Permission.HasUserAuthorizedPermission(Permission.ExternalStorageRead);
+
+                    String[] permission = new String[]
+                    {
+                        Permission.ExternalStorageRead,
+                        Permission.ExternalStorageWrite
+                    };
+
+                    while (!HasStoragePermission())
+                    {                       
+                        Permission.RequestUserPermissions(permission);
+                    }
+                }
             }
             else
             {
@@ -870,6 +888,19 @@ namespace Nekoyume.Game
                 uniqueId,
                 rpcServerHost,
                 isTrackable);
+        }
+        void Update()
+        {
+            if (Platform.IsMobilePlatform())
+            {
+                int width = Screen.resolutions[0].width;
+                int height = Screen.resolutions[0].height;
+                if (Screen.currentResolution.width!= height || Screen.currentResolution.height != width)
+                {
+                    Debug.LogWarning($"fix Resolution to w={width} h={height}");
+                    Screen.SetResolution(height, width, true);
+                }
+            }
         }
     }
 }

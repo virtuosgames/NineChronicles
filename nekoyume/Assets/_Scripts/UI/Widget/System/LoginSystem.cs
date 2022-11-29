@@ -324,6 +324,7 @@ namespace Nekoyume.UI
 
         public void Show(string path, string privateKeyString)
         {
+            Debug.LogWarning($"Show path={path}, private={privateKeyString}");
             if (_capturedImage != null)
             {
                 _capturedImage.Show();
@@ -331,8 +332,8 @@ namespace Nekoyume.UI
 
             if (Platform.IsMobilePlatform())
             {
-                string dataPath = Platform.PersistentDataPath;
-                KeyStore = path is null ? new Web3KeyStore(dataPath + "/KeyStore") : new Web3KeyStore(path);
+                string dataPath = Platform.GetPersistentDataPath("KeyStore");
+                KeyStore = path is null ? new Web3KeyStore(dataPath) : new Web3KeyStore(path);
             }
             else
             {

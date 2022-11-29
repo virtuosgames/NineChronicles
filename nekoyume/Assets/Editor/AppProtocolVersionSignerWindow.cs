@@ -176,8 +176,8 @@ namespace Editor
         {
             if (Platform.IsMobilePlatform())
             {
-                string dataPath = Application.persistentDataPath;
-                _keyStore = new Web3KeyStore(dataPath + "/KeyStore");
+                string dataPath = Platform.GetPersistentDataPath("KeyStore");
+                _keyStore = new Web3KeyStore(dataPath);
             }
             else
             {
