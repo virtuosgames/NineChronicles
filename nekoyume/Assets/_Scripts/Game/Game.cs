@@ -199,10 +199,22 @@ namespace Nekoyume.Game
             Lib9c.DevExtensions.TestbedHelper.LoadTestbedCreateAvatarForQA();
 #endif
             Debug.Log("[Game] Start() invoked");
+
+#if (LIB9C_DEV_IL2CPP)
+            // Because of strict AOT environments, use StaticCompositeResolver for IL2CPP.
+            MessagePack.Resolvers.StaticCompositeResolver.Instance.Register(
+                    MagicOnion.Resolvers.MagicOnionResolver.Instance,
+                    Lib9c.Formatters.NineChroniclesResolver.Instance,
+                    MessagePack.Resolvers.GeneratedResolver.Instance,
+                    MessagePack.Resolvers.StandardResolver.Instance
+                );
+            var resolver = StaticCompositeResolver.Instance;
+#else
             var resolver = MessagePack.Resolvers.CompositeResolver.Create(
                 NineChroniclesResolver.Instance,
                 StandardResolver.Instance
             );
+#endif
             var options = MessagePackSerializerOptions.Standard.WithResolver(resolver);
             MessagePackSerializer.DefaultOptions = options;
 
@@ -559,7 +571,7 @@ namespace Nekoyume.Game
             Widget.Find<PreloadingScreen>().Close();
         }
 
-        #endregion
+#endregion
 
         protected override void OnApplicationQuit()
         {

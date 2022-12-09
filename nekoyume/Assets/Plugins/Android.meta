@@ -1,5 +1,9 @@
 fileFormatVersion: 2
+<<<<<<<< HEAD:nekoyume/Assets/Plugins/Android.meta
 guid: 3978d2cbfed874946bd536497caa45b9
+========
+guid: bdcd27a840f3f7d40abd74ac16fd0d11
+>>>>>>>> origin/Virtuos_Dev_IL2Cpp:nekoyume/Assets/_Scripts/AOTGenerated.meta
 folderAsset: yes
 DefaultImporter:
   externalObjects: {}

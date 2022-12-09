@@ -8,6 +8,5 @@
     "GenesisBlockPath": "https://release.nine-chronicles.com/genesis-block-9c-main",
     "OnboardingPortalUrl": "http://raid.9c.gg",
     "SentrySampleRate": 0.05,
-    "ApiServerHost": "https://api.9c.gg/graphql"
+    "ApiServerHost": "https://api.9c.gg/graphql",
 }
-
