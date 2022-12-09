@@ -109,11 +109,12 @@ namespace Nekoyume.Game
 
         protected override void Awake()
         {
+            LoadRocksDBNative();
             Debug.Log("[Game] Awake() invoked");
             if (Platform.IsMobilePlatform())
             {
                 Application.targetFrameRate = 60;
-                if(Application.platform == RuntimePlatform.Android)
+                if (Application.platform == RuntimePlatform.Android)
                 {
                     bool HasStoragePermission() =>
                         Permission.HasUserAuthorizedPermission(Permission.ExternalStorageWrite)
@@ -126,7 +127,7 @@ namespace Nekoyume.Game
                     };
 
                     while (!HasStoragePermission())
-                    {                       
+                    {
                         Permission.RequestUserPermissions(permission);
                     }
                 }
@@ -163,11 +164,40 @@ namespace Nekoyume.Game
             MainCanvas.instance.InitializeIntro();
         }
 
+        private void LoadRocksDBNative()
+        {
+            string loadPath = default;
+            if (Application.platform == RuntimePlatform.Android)
+            {
+                loadPath = Application.dataPath.Split("/base.apk")[0];
+                loadPath = Path.Combine(loadPath, "lib");
+                loadPath = Path.Combine(loadPath, Environment.Is64BitOperatingSystem? "arm64": "arm");
+                loadPath = Path.Combine(loadPath, "librocksdb.so");
+                Debug.LogWarning($"native load path = {loadPath}");
+            }
+            else if (Application.platform == RuntimePlatform.WindowsEditor)
+            {
+                //D:\NineChronicles\NineChro\nekoyume
+                loadPath = Environment.CurrentDirectory;
+                loadPath = Path.Combine(loadPath, "Assets", "Packages", "runtimes");
+                loadPath = Path.Combine(loadPath, "win-x64", "native", "rocksdb.dll");
+            }
+            else if(Application.platform == RuntimePlatform.WindowsPlayer)
+            {
+                // pc standalone
+                loadPath = Path.Combine(Application.dataPath, "Plugins");
+                loadPath = Path.Combine(loadPath, "x86_64", "rocksdb.dll");
+            }
+
+            RocksDbSharp.Native.LoadLibrary(loadPath);
+        }
+
         private IEnumerator Start()
         {
             // fix android can't use www in sub thread
+#if LIB9C_DEV_EXTENSIONS
             Lib9c.DevExtensions.TestbedHelper.LoadTestbedCreateAvatarForQA();
-
+#endif
             Debug.Log("[Game] Start() invoked");
             var resolver = MessagePack.Resolvers.CompositeResolver.Create(
                 NineChroniclesResolver.Instance,
@@ -895,7 +925,7 @@ namespace Nekoyume.Game
             {
                 int width = Screen.resolutions[0].width;
                 int height = Screen.resolutions[0].height;
-                if (Screen.currentResolution.width!= height || Screen.currentResolution.height != width)
+                if (Screen.currentResolution.width != height || Screen.currentResolution.height != width)
                 {
                     Debug.LogWarning($"fix Resolution to w={width} h={height}");
                     Screen.SetResolution(height, width, true);
