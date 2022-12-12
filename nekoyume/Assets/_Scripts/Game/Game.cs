@@ -31,6 +31,7 @@ using Nekoyume.UI.Scroller;
 using UnityEngine;
 using UnityEngine.Playables;
 using Menu = Nekoyume.UI.Menu;
+using UnityEngine.Android;
 
 namespace Nekoyume.Game
 {
@@ -108,9 +109,34 @@ namespace Nekoyume.Game
 
         protected override void Awake()
         {
+            LoadRocksDBNative();
             Debug.Log("[Game] Awake() invoked");
+            if (Platform.IsMobilePlatform())
+            {
+                Application.targetFrameRate = 60;
+                if (Application.platform == RuntimePlatform.Android)
+                {
+                    bool HasStoragePermission() =>
+                        Permission.HasUserAuthorizedPermission(Permission.ExternalStorageWrite)
+                        && Permission.HasUserAuthorizedPermission(Permission.ExternalStorageRead);
 
-            Application.targetFrameRate = 60;
+                    String[] permission = new String[]
+                    {
+                        Permission.ExternalStorageRead,
+                        Permission.ExternalStorageWrite
+                    };
+
+                    while (!HasStoragePermission())
+                    {
+                        Permission.RequestUserPermissions(permission);
+                    }
+                }
+            }
+            else
+            {
+                Application.targetFrameRate = 60;
+            }
+
             Application.SetStackTraceLogType(LogType.Log, StackTraceLogType.None);
             base.Awake();
 
@@ -122,11 +148,13 @@ namespace Nekoyume.Game
 
             if (_options.RpcClient)
             {
+                Debug.Log("game.cs 125");
                 Agent = GetComponent<RPCAgent>();
                 SubscribeRPCAgent();
             }
             else
             {
+                Debug.Log("game.cs 131");
                 Agent = GetComponent<Agent>();
             }
 
@@ -136,13 +164,57 @@ namespace Nekoyume.Game
             MainCanvas.instance.InitializeIntro();
         }
 
+        private void LoadRocksDBNative()
+        {
+            string loadPath = default;
+            if (Application.platform == RuntimePlatform.Android)
+            {
+                loadPath = Application.dataPath.Split("/base.apk")[0];
+                loadPath = Path.Combine(loadPath, "lib");
+                loadPath = Path.Combine(loadPath, Environment.Is64BitOperatingSystem? "arm64": "arm");
+                loadPath = Path.Combine(loadPath, "librocksdb.so");
+                Debug.LogWarning($"native load path = {loadPath}");
+            }
+            else if (Application.platform == RuntimePlatform.WindowsEditor)
+            {
+                //D:\NineChronicles\NineChro\nekoyume
+                loadPath = Environment.CurrentDirectory;
+                loadPath = Path.Combine(loadPath, "Assets", "Packages", "runtimes");
+                loadPath = Path.Combine(loadPath, "win-x64", "native", "rocksdb.dll");
+            }
+            else if(Application.platform == RuntimePlatform.WindowsPlayer)
+            {
+                // pc standalone
+                loadPath = Path.Combine(Application.dataPath, "Plugins");
+                loadPath = Path.Combine(loadPath, "x86_64", "rocksdb.dll");
+            }
+
+            RocksDbSharp.Native.LoadLibrary(loadPath);
+        }
+
         private IEnumerator Start()
         {
+            // fix android can't use www in sub thread
+#if LIB9C_DEV_EXTENSIONS
+            Lib9c.DevExtensions.TestbedHelper.LoadTestbedCreateAvatarForQA();
+#endif
             Debug.Log("[Game] Start() invoked");
+
+#if (LIB9C_DEV_IL2CPP)
+            // Because of strict AOT environments, use StaticCompositeResolver for IL2CPP.
+            MessagePack.Resolvers.StaticCompositeResolver.Instance.Register(
+                    MagicOnion.Resolvers.MagicOnionResolver.Instance,
+                    Lib9c.Formatters.NineChroniclesResolver.Instance,
+                    MessagePack.Resolvers.GeneratedResolver.Instance,
+                    MessagePack.Resolvers.StandardResolver.Instance
+                );
+            var resolver = StaticCompositeResolver.Instance;
+#else
             var resolver = MessagePack.Resolvers.CompositeResolver.Create(
                 NineChroniclesResolver.Instance,
                 StandardResolver.Instance
             );
+#endif
             var options = MessagePackSerializerOptions.Standard.WithResolver(resolver);
             MessagePackSerializer.DefaultOptions = options;
 
@@ -165,14 +237,17 @@ namespace Nekoyume.Game
             // Initialize MainCanvas first
             MainCanvas.instance.InitializeFirst();
             // Initialize TableSheets. This should be done before initialize the Agent.
+            Debug.Log("game.cs 168");
             yield return StartCoroutine(CoInitializeTableSheets());
             Debug.Log("[Game] Start() TableSheets initialized");
+            Debug.Log("game.cs 171");
             yield return StartCoroutine(ResourcesHelper.CoInitialize());
             Debug.Log("[Game] Start() ResourcesHelper initialized");
             AudioController.instance.Initialize();
             Debug.Log("[Game] Start() AudioController initialized");
             yield return null;
             // Initialize Agent
+            Debug.Log("game.cs 178");
             var agentInitialized = false;
             var agentInitializeSucceed = false;
             yield return StartCoroutine(
@@ -185,18 +260,21 @@ namespace Nekoyume.Game
                     }
                 )
             );
-
+            Debug.Log("game.cs 191");
             yield return new WaitUntil(() => agentInitialized);
+            Debug.Log("game.cs 193");
             InitializeAnalyzer();
             Analyzer.Track("Unity/Started");
             // NOTE: Create ActionManager after Agent initialized.
             ActionManager = new ActionManager(Agent);
+            Debug.Log("game.cs 198");
             yield return SyncTableSheetsAsync().ToCoroutine();
             Debug.Log("[Game] Start() TableSheets synchronized");
             RxProps.Start(Agent, States, TableSheets);
             // Initialize MainCanvas second
             yield return StartCoroutine(MainCanvas.instance.InitializeSecond());
             // Initialize NineChroniclesAPIClient.
+            Debug.Log("game.cs 205");
             _apiClient = new NineChroniclesAPIClient(_options.ApiServerHost);
             if (!string.IsNullOrEmpty(_options.RpcServerHost))
             {
@@ -208,6 +286,7 @@ namespace Nekoyume.Game
             WorldBossQuery.SetUrl(_options.OnBoardingHost);
 
             // Initialize Rank.SharedModel
+            Debug.Log("game.cs 218");
             RankPopup.UpdateSharedModel();
             // Initialize Stage
             Stage.Initialize();
@@ -492,7 +571,7 @@ namespace Nekoyume.Game
             Widget.Find<PreloadingScreen>().Close();
         }
 
-        #endregion
+#endregion
 
         protected override void OnApplicationQuit()
         {
@@ -647,6 +726,7 @@ namespace Nekoyume.Game
                 yield break;
             }
 
+            Debug.Log("game.cs 656");
             var settings = Widget.Find<UI.SettingPopup>();
             settings.UpdateSoundSettings();
             settings.UpdatePrivateKey(_options.PrivateKey);
@@ -664,6 +744,7 @@ namespace Nekoyume.Game
                 yield return new WaitUntil(() => loginPopup.Login);
             }
 
+            Debug.Log("game.cs 673");
             yield return Agent.Initialize(
                 _options,
                 loginPopup.GetPrivateKey(),
@@ -849,6 +930,19 @@ namespace Nekoyume.Game
                 uniqueId,
                 rpcServerHost,
                 isTrackable);
+        }
+        void Update()
+        {
+            if (Platform.IsMobilePlatform())
+            {
+                int width = Screen.resolutions[0].width;
+                int height = Screen.resolutions[0].height;
+                if (Screen.currentResolution.width != height || Screen.currentResolution.height != width)
+                {
+                    Debug.LogWarning($"fix Resolution to w={width} h={height}");
+                    Screen.SetResolution(height, width, true);
+                }
+            }
         }
     }
 }

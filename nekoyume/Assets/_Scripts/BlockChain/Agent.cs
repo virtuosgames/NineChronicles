@@ -59,7 +59,7 @@ namespace Nekoyume.BlockChain
 
         private const int MaxSeed = 3;
 
-        public static readonly string DefaultStoragePath = StorePath.GetDefaultStoragePath();
+        public static string DefaultStoragePath;
 
         public Subject<long> BlockIndexSubject { get; } = new Subject<long>();
         public Subject<BlockHash> BlockTipHashSubject { get; } = new Subject<BlockHash>();
@@ -170,7 +170,7 @@ namespace Nekoyume.BlockChain
             InitializeLogger(consoleSink, development);
             BlockPolicySource = new BlockPolicySource(Log.Logger, LogEventLevel.Debug);
 
-            var genesisBlock = BlockManager.ImportBlock(genesisBlockPath ?? BlockManager.GenesisBlockPath);
+            var genesisBlock = BlockManager.ImportBlock(genesisBlockPath ?? BlockManager.GenesisBlockPath());
             if (genesisBlock is null)
             {
                 Debug.LogError("There is no genesis block.");
@@ -187,11 +187,13 @@ namespace Nekoyume.BlockChain
             var policy = BlockPolicySource.GetPolicy();
             _stagePolicy = new VolatileStagePolicy<NCAction>();
             PrivateKey = privateKey;
+
             store = LoadStore(path, storageType);
 
             try
             {
-                IKeyValueStore stateKeyValueStore = new RocksDBKeyValueStore(Path.Combine(path, "states"));
+                string keyPath = path + "/states";
+                IKeyValueStore stateKeyValueStore = new RocksDBKeyValueStore(keyPath);
                 _stateStore = new TrieStateStore(stateKeyValueStore);
                 blocks = new BlockChain<NCAction>(
                     policy,
@@ -345,6 +347,8 @@ namespace Nekoyume.BlockChain
 
         private void Awake()
         {
+            DefaultStoragePath = StorePath.GetDefaultStoragePath();
+
             ForceDotNet.Force();
             string parentDir = Path.GetDirectoryName(DefaultStoragePath);
             if (!Directory.Exists(parentDir))
@@ -369,6 +373,7 @@ namespace Nekoyume.BlockChain
 
         private void InitAgent(Action<bool> callback, PrivateKey privateKey, CommandLineOptions options)
         {
+            Debug.Log("Agent.cs InitAgent 376");
             var peers = options.Peers.Select(LoadPeer);
             var iceServerList = options.IceServers.Select(LoadIceServer).ToImmutableList();
 
@@ -421,6 +426,7 @@ namespace Nekoyume.BlockChain
 
             PreloadEndedAsync += async () =>
             {
+                Debug.Log("Agent.cs InitAgent 429");
                 // 에이전트의 상태를 한 번 동기화 한다.
                 Currency goldCurrency =
                     new GoldCurrencyState((Dictionary)await GetStateAsync(GoldCurrencyState.Address)).Currency;
@@ -432,11 +438,12 @@ namespace Nekoyume.BlockChain
                     await GetBalanceAsync(Address, goldCurrency)));
                 States.Instance.SetCrystalBalance(
                     await GetBalanceAsync(Address, CrystalCalculator.CRYSTAL));
-
+                Debug.Log("Agent.cs InitAgent 440");
                 if (await GetStateAsync(
                         StakeState.DeriveAddress(States.Instance.AgentState.address))
                     is Dictionary stakeDict)
                 {
+                    Debug.Log("Agent.cs InitAgent 445");
                     var stakingState = new StakeState(stakeDict);
                     var balance = new FungibleAssetValue(goldCurrency);
                     var level = 0;
@@ -460,6 +467,7 @@ namespace Nekoyume.BlockChain
                 }
                 else
                 {
+                    Debug.Log("Agent.cs InitAgent 469");
                     var monsterCollectionAddress = MonsterCollectionState.DeriveAddress(
                         Address,
                         States.Instance.AgentState.MonsterCollectionRound
@@ -490,6 +498,7 @@ namespace Nekoyume.BlockChain
                     }
                 }
 
+                Debug.Log("Agent.cs InitAgent 499");
                 ActionRenderHandler.Instance.GoldCurrency = goldCurrency;
                 if (await GetStateAsync(GameConfigState.Address) is Dictionary configDict)
                 {
@@ -500,6 +509,7 @@ namespace Nekoyume.BlockChain
                     throw new FailedToInstantiateStateException<GameConfigState>();
                 }
 
+                Debug.Log("Agent.cs InitAgent 509");
                 // 그리고 모든 액션에 대한 랜더와 언랜더를 핸들링하기 시작한다.
                 BlockRenderHandler.Instance.Start(BlockRenderer);
                 ActionRenderHandler.Instance.Start(ActionRenderer);
@@ -514,7 +524,7 @@ namespace Nekoyume.BlockChain
                 LoadQueuedActions();
                 TipChanged += (___, index) => { BlockIndexSubject.OnNext(index); };
             };
-
+            Debug.Log("Agent.cs InitAgent 522");
             _miner = options.NoMiner ? null : CoMiner();
             _autoPlayer = options.AutoPlay ? CoAutoPlayer() : null;
 
@@ -710,6 +720,7 @@ namespace Nekoyume.BlockChain
 
         private IEnumerator CoSwarmRunner()
         {
+            Debug.Log("Agent.cs CoSwarmRunner 721 beginning");
             BootstrapStarted?.Invoke(this, null);
             if (_peerList.Any())
             {
@@ -726,18 +737,22 @@ namespace Nekoyume.BlockChain
                     }
                     catch (SwarmException e)
                     {
+                        Debug.Log("catch (SwarmException e)");
                         Debug.LogFormat("Bootstrap failed. {0}", e.Message);
                         throw;
                     }
                     catch (TimeoutException)
                     {
+                        Debug.Log("catch (TimeoutException)");
                     }
                     catch (Exception e)
                     {
+                        Debug.Log("Exception e");
                         Debug.LogFormat("Exception occurred during bootstrap {0}", e);
                         throw;
                     }
                 });
+                Debug.Log("Agents.cs 753");
                 yield return new WaitUntil(() => bootstrapTask.IsCompleted);
 #if !UNITY_EDITOR
                 if (!Application.isBatchMode && (bootstrapTask.IsFaulted || bootstrapTask.IsCanceled))
@@ -754,6 +769,7 @@ namespace Nekoyume.BlockChain
                     yield break;
                 }
 #endif
+                Debug.Log("Agent.cs CoSwarmRunner 766");
                 var started = DateTimeOffset.UtcNow;
                 var existingBlocks = blocks?.Tip?.Index ?? 0;
                 Debug.Log("Preloading starts");
@@ -791,6 +807,9 @@ namespace Nekoyume.BlockChain
                     index - existingBlocks
                 );
             }
+
+            Debug.Log("Agent.cs CoSwarmRunner 802");
+            Debug.Log("PreloadEndedAsync=" + PreloadEndedAsync == null ? "null" : "ok");
 
             yield return PreloadEndedAsync?.Invoke().ToCoroutine();
 
@@ -954,7 +973,7 @@ namespace Nekoyume.BlockChain
 
         private void LoadQueuedActions()
         {
-            var path = Path.Combine(Application.persistentDataPath, QueuedActionsFileName);
+            var path = Platform.GetPersistentDataPath(QueuedActionsFileName);
             if (File.Exists(path))
             {
                 var actionsListBytes = File.ReadAllBytes(path);
@@ -977,8 +996,7 @@ namespace Nekoyume.BlockChain
             if (_queuedActions.Any())
             {
                 List<GameAction> actionsList;
-
-                var path = Path.Combine(Application.persistentDataPath, QueuedActionsFileName);
+                var path = Platform.GetPersistentDataPath(QueuedActionsFileName);
                 if (!File.Exists(path))
                 {
                     Debug.Log("Create new queuedActions list.");

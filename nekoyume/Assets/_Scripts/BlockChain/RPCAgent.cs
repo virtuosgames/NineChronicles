@@ -131,7 +131,7 @@ namespace Nekoyume.BlockChain
             yield return null;
             var task = Task.Run(async () =>
             {
-                _genesis = await BlockManager.ImportBlockAsync(options.GenesisBlockPath ?? BlockManager.GenesisBlockPath);
+                _genesis = await BlockManager.ImportBlockAsync(options.GenesisBlockPath ?? BlockManager.GenesisBlockPath());
             });
             yield return new WaitUntil(() => task.IsCompleted);
             var appProtocolVersion = options.AppProtocolVersion is null
@@ -253,41 +253,41 @@ namespace Nekoyume.BlockChain
 
         private void Awake()
         {
-            OnDisconnected
-                .ObserveOnMainThread()
-                .Subscribe(_ => Analyzer.Instance.Track("Unity/RPC Disconnected", new Value
-                {
-                    ["AvatarAddress"] = States.Instance.CurrentAvatarState.address.ToString(),
-                }))
-                .AddTo(_disposables);
-            OnRetryStarted
-                .ObserveOnMainThread()
-                .Subscribe(_ => Analyzer.Instance.Track("Unity/RPC Retry Connect Started", new Value
-                {
-                    ["AvatarAddress"] = States.Instance.CurrentAvatarState.address.ToString(),
-                }))
-                .AddTo(_disposables);
-            OnRetryEnded
-                .ObserveOnMainThread()
-                .Subscribe(_ => Analyzer.Instance.Track("Unity/RPC Retry Connect Ended", new Value
-                {
-                    ["AvatarAddress"] = States.Instance.CurrentAvatarState.address.ToString(),
-                }))
-                .AddTo(_disposables);
-            OnPreloadStarted
-                .ObserveOnMainThread()
-                .Subscribe(_ => Analyzer.Instance.Track("Unity/RPC Preload Started", new Value
-                {
-                    ["AvatarAddress"] = States.Instance.CurrentAvatarState.address.ToString(),
-                }))
-                .AddTo(_disposables);
-            OnPreloadEnded
-                .ObserveOnMainThread()
-                .Subscribe(_ => Analyzer.Instance.Track("Unity/RPC Preload Ended", new Value
-                {
-                    ["AvatarAddress"] = States.Instance.CurrentAvatarState.address.ToString(),
-                }))
-                .AddTo(_disposables);
+            //OnDisconnected
+            //    .ObserveOnMainThread()
+            //    .Subscribe(_ => Analyzer.Instance.Track("Unity/RPC Disconnected", new Value
+            //    {
+            //        ["AvatarAddress"] = States.Instance.CurrentAvatarState.address.ToString(),
+            //    }))
+            //    .AddTo(_disposables);
+            //OnRetryStarted
+            //    .ObserveOnMainThread()
+            //    .Subscribe(_ => Analyzer.Instance.Track("Unity/RPC Retry Connect Started", new Value
+            //    {
+            //        ["AvatarAddress"] = States.Instance.CurrentAvatarState.address.ToString(),
+            //    }))
+            //    .AddTo(_disposables);
+            //OnRetryEnded
+            //    .ObserveOnMainThread()
+            //    .Subscribe(_ => Analyzer.Instance.Track("Unity/RPC Retry Connect Ended", new Value
+            //    {
+            //        ["AvatarAddress"] = States.Instance.CurrentAvatarState.address.ToString(),
+            //    }))
+            //    .AddTo(_disposables);
+            //OnPreloadStarted
+            //    .ObserveOnMainThread()
+            //    .Subscribe(_ => Analyzer.Instance.Track("Unity/RPC Preload Started", new Value
+            //    {
+            //        ["AvatarAddress"] = States.Instance.CurrentAvatarState.address.ToString(),
+            //    }))
+            //    .AddTo(_disposables);
+            //OnPreloadEnded
+            //    .ObserveOnMainThread()
+            //    .Subscribe(_ => Analyzer.Instance.Track("Unity/RPC Preload Ended", new Value
+            //    {
+            //        ["AvatarAddress"] = States.Instance.CurrentAvatarState.address.ToString(),
+            //    }))
+            //    .AddTo(_disposables);
             OnRetryAttempt
                 .ObserveOnMainThread()
                 .Subscribe(tuple =>

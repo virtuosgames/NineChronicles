@@ -120,7 +120,8 @@ namespace Nekoyume.Helper
             }
         }
 
-        [Option("ice-servers", Required = false, HelpText = "STUN/TURN servers to use. (Usage: --ice-servers serverA serverB ...)")]
+        [Option("ice-servers", Required = false,
+            HelpText = "STUN/TURN servers to use. (Usage: --ice-servers serverA serverB ...)")]
         public IEnumerable<string> IceServers
         {
             get => iceServers;
@@ -259,8 +260,8 @@ namespace Nekoyume.Helper
         }
 
         [Option('V', "app-protocol-version",
-                Required = false,
-                HelpText = "App protocol version token.")]
+            Required = false,
+            HelpText = "App protocol version token.")]
         public string AppProtocolVersion
         {
             get => appProtocolVersion;
@@ -272,8 +273,8 @@ namespace Nekoyume.Helper
         }
 
         [Option('T', "trusted-app-protocol-version-signer",
-                Required = false,
-                HelpText = "Trustworthy signers who claim new app protocol versions")]
+            Required = false,
+            HelpText = "Trustworthy signers who claim new app protocol versions")]
         public IEnumerable<string> TrustedAppProtocolVersionSigners
         {
             get => trustedAppProtocolVersionSigners;
@@ -368,13 +369,29 @@ namespace Nekoyume.Helper
                 ReadCommentHandling = JsonCommentHandling.Skip,
             };
 
-            if (File.Exists(localPath))
+            if (Platform.IsMobilePlatform())
             {
-                Debug.Log($"Get options from local: {localPath}");
-                return JsonSerializer.Deserialize<CommandLineOptions>(File.ReadAllText(localPath), jsonOptions);
+                // error: current no clo.json
+                UnityEngine.WWW www = new UnityEngine.WWW(Platform.GetStreamingAssetsPath("clo.json"));
+                while (!www.isDone)
+                {
+                    // wait for data load
+                }
+
+                return JsonSerializer.Deserialize<CommandLineOptions>(www.text, jsonOptions);
+            }
+            else
+            {
+                string testPath = Platform.GetStreamingAssetsPath("clo.json");
+                if (File.Exists(testPath))
+                {
+                    Debug.Log($"Get options from local: {testPath}");
+                    return JsonSerializer.Deserialize<CommandLineOptions>(File.ReadAllText(testPath), jsonOptions);
+                }
+
+                Debug.LogErrorFormat("Failed to find {0}. Using default options.", localPath);
             }
 
-            Debug.LogErrorFormat("Failed to find {0}. Using default options.", localPath);
             return new CommandLineOptions();
         }
 
@@ -423,6 +440,7 @@ namespace Nekoyume.Helper
                 {
                     writer.WriteStringValue(el);
                 }
+
                 writer.WriteEndArray();
             }
         }
@@ -446,7 +464,7 @@ namespace Nekoyume.Helper
             result.WithNotParsed(
                 errors =>
                     Debug.Log(HelpText.AutoBuild(result)
-            ));
+                    ));
 
             return null;
         }

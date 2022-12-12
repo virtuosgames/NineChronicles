@@ -215,18 +215,30 @@ namespace Nekoyume.L10n
 
         public static IReadOnlyDictionary<string, string> GetDictionary(LanguageType languageType)
         {
-            if (!Directory.Exists(CsvFilesRootDirectoryPath))
+            if (Platform.IsMobilePlatform())
             {
-                throw new DirectoryNotFoundException(CsvFilesRootDirectoryPath);
-            }
-
-            var dictionary = new Dictionary<string, string>();
-            var csvFileInfos = new DirectoryInfo(CsvFilesRootDirectoryPath).GetFiles("*.csv");
-            foreach (var csvFileInfo in csvFileInfos)
-            {
-                using (var streamReader = new StreamReader(csvFileInfo.FullName))
-                using (var csvReader = new CsvReader(streamReader, CultureInfo.InvariantCulture))
+                WWW directory = new WWW(CsvFilesRootDirectoryPath + "/DirectoryForAndroid.txt");
+                while (!directory.isDone)
                 {
+                    // wait for load
+                }
+
+                String[] fileNames = directory.text.Split("\r\n");
+
+                Dictionary<string, string> dictionary = new Dictionary<string, string>();
+                foreach (String fileName in fileNames)
+                {
+                    String fullName = CsvFilesRootDirectoryPath + "/" + fileName;
+                    WWW csvFile = new WWW(fullName);
+                    while (!csvFile.isDone)
+                    {
+                        // wait for load
+                    }
+
+                    StreamReader streamReader =
+                        new StreamReader(new MemoryStream(csvFile.bytes), System.Text.Encoding.Default);
+                    CsvReader csvReader = new CsvReader((TextReader)streamReader, CultureInfo.InvariantCulture);
+
                     csvReader.Configuration.PrepareHeaderForMatch =
                         (header, index) => header.ToLower();
 #if ENABLE_IL2CPP
@@ -240,7 +252,7 @@ namespace Nekoyume.L10n
                         foreach (var record in records)
                         {
 #if TEST_LOG
-                        Debug.Log($"{csvFileInfo.Name}: {recordsIndex}");
+                        Debug.Log($"{fileName}: {recordsIndex}");
 #endif
                             var key = record.Key;
                             if (string.IsNullOrEmpty(key))
@@ -249,7 +261,7 @@ namespace Nekoyume.L10n
                                 continue;
                             }
 
-                            var value = (string) typeof(L10nCsvModel)
+                            var value = (string)typeof(L10nCsvModel)
                                 .GetProperty(languageType.ToString())?
                                 .GetValue(record);
 
@@ -261,7 +273,7 @@ namespace Nekoyume.L10n
                             if (dictionary.ContainsKey(key))
                             {
                                 throw new L10nAlreadyContainsKeyException(
-                                    $"key: {key}, recordsIndex: {recordsIndex}, csvFileInfo: {csvFileInfo.FullName}");
+                                    $"key: {key}, recordsIndex: {recordsIndex}, csvFileInfo: {fullName}");
                             }
 
                             dictionary.Add(key, value);
@@ -270,12 +282,72 @@ namespace Nekoyume.L10n
                     }
                     catch (CsvHelper.MissingFieldException e)
                     {
-                        Debug.LogWarning($"`{csvFileInfo.Name}` file has empty field.\n{e}");
+                        Debug.LogWarning($"`{fileName}` file has empty field.\n{e}");
                     }
                 }
-            }
 
-            return dictionary;
+                return dictionary;
+            }
+            else
+            {
+                if (!Directory.Exists(CsvFilesRootDirectoryPath))
+                {
+                    throw new DirectoryNotFoundException(CsvFilesRootDirectoryPath);
+                }
+
+                var dictionary = new Dictionary<string, string>();
+                var csvFileInfos = new DirectoryInfo(CsvFilesRootDirectoryPath).GetFiles("*.csv");
+                foreach (var csvFileInfo in csvFileInfos)
+                {
+                    using (var streamReader = new StreamReader(csvFileInfo.FullName))
+                    using (var csvReader = new CsvReader(streamReader, CultureInfo.InvariantCulture))
+                    {
+                        csvReader.Configuration.PrepareHeaderForMatch =
+                            (header, index) => header.ToLower();
+                        var records = csvReader.GetRecords<L10nCsvModel>();
+                        var recordsIndex = 0;
+                        try
+                        {
+                            foreach (var record in records)
+                            {
+#if TEST_LOG
+                        Debug.Log($"{csvFileInfo.Name}: {recordsIndex}");
+#endif
+                                var key = record.Key;
+                                if (string.IsNullOrEmpty(key))
+                                {
+                                    recordsIndex++;
+                                    continue;
+                                }
+
+                                var value = (string)typeof(L10nCsvModel)
+                                    .GetProperty(languageType.ToString())?
+                                    .GetValue(record);
+
+                                if (string.IsNullOrEmpty(value))
+                                {
+                                    value = record.English;
+                                }
+
+                                if (dictionary.ContainsKey(key))
+                                {
+                                    throw new L10nAlreadyContainsKeyException(
+                                        $"key: {key}, recordsIndex: {recordsIndex}, csvFileInfo: {csvFileInfo.FullName}");
+                                }
+
+                                dictionary.Add(key, value);
+                                recordsIndex++;
+                            }
+                        }
+                        catch (CsvHelper.MissingFieldException e)
+                        {
+                            Debug.LogWarning($"`{csvFileInfo.Name}` file has empty field.\n{e}");
+                        }
+                    }
+                }
+
+                return dictionary;
+            }
         }
 
         #region Localize

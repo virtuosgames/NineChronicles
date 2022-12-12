@@ -50,7 +50,7 @@
       "hash": "05442994ffb7f6c679f648d702cdf888bd8c01dc"
     },
     "com.esotericsoftware.spine.urp-shaders": {
-      "version": "file:../LocalPackages/com.esotericsoftware.spine.urp-shaders-3.8-2019.3",
+      "version": "file:../LocalPackages/com.esotericsoftware.spine.urp-shaders-3.8",
       "depth": 0,
       "source": "local",
       "dependencies": {

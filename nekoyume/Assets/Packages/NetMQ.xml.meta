@@ -1,6 +1,11 @@
 fileFormatVersion: 2
-guid: 8bbdcff60e2569d4f9cddd262d8665f5
+<<<<<<<< HEAD:nekoyume/Assets/Packages/NetMQ.xml.meta
+guid: d6109d9c2359b25449b8b93551e89c5f
 TextScriptImporter:
+========
+guid: 5a46ad82eac024e4fbb6a0516a5def17
+AssemblyDefinitionImporter:
+>>>>>>>> origin/Virtuos_Dev_IL2Cpp:nekoyume/Assets/MessagePack/Annotations/MessagePack.Annotations.asmdef.meta
   externalObjects: {}
   userData: 
   assetBundleName: 
