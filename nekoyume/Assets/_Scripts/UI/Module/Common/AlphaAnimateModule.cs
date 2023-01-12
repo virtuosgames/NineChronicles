@@ -26,24 +26,23 @@ namespace Nekoyume.UI.Module.Common
                 canvasGroup.alpha = 1f;
             }
 
-            if (Platform.IsMobilePlatform())
+#if UNITY_IOS || UNITY_ANDROID
+            EventTrigger eventTrigger = this.GetComponent<EventTrigger>();
+            if (eventTrigger is null)
             {
-                EventTrigger eventTrigger = this.GetComponent<EventTrigger>();
-                if(eventTrigger is null)
+                return;
+            }
+            // Disable pointer_exit event on mobile platform
+            // Because this causes wrong interaction
+            foreach (var item in eventTrigger.triggers)
+            {
+                if (item.eventID == EventTriggerType.PointerExit)
                 {
-                    return;
-                }
-                // Disable pointer_exit event on mobile platform
-                // Because this causes wrong interaction
-                foreach (var item in eventTrigger.triggers)
-                {
-                    if (item.eventID == EventTriggerType.PointerExit)
-                    {
-                        eventTrigger.triggers.Remove(item);
-                        break;
-                    }
+                    eventTrigger.triggers.Remove(item);
+                    break;
                 }
             }
+#endif
         }
 
         protected virtual void OnDisable()

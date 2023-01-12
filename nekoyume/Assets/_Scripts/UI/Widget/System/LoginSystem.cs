@@ -70,15 +70,12 @@ namespace Nekoyume.UI
         protected override void Awake()
         {
             // Default KeyStore in android is invalid, we should redefine it.
-            if (Platform.IsMobilePlatform())
-            {
-                string dataPath = Platform.PersistentDataPath;
-                KeyStore = new Web3KeyStore(dataPath + "/KeyStore");
-            }
-            else
-            {
-                KeyStore = Web3KeyStore.DefaultKeyStore;
-            }
+#if UNITY_IOS || UNITY_ANDROID
+            string dataPath = Platform.PersistentDataPath;
+            KeyStore = new Web3KeyStore(dataPath + "/KeyStore");
+#else
+            KeyStore = Web3KeyStore.DefaultKeyStore;
+#endif
 
             _capturedImage = GetComponentInChildren<CapturedImage>();
             State.Value = States.Show;
@@ -326,15 +323,12 @@ namespace Nekoyume.UI
                 _capturedImage.Show();
             }
 
-            if (Platform.IsMobilePlatform())
-            {
-                string dataPath = Platform.GetPersistentDataPath("KeyStore");
-                KeyStore = path is null ? new Web3KeyStore(dataPath) : new Web3KeyStore(path);
-            }
-            else
-            {
-                KeyStore = path is null ? Web3KeyStore.DefaultKeyStore : new Web3KeyStore(path);
-            }
+#if UNITY_IOS || UNITY_ANDROID
+            string dataPath = Platform.GetPersistentDataPath("KeyStore");
+            KeyStore = path is null ? new Web3KeyStore(dataPath) : new Web3KeyStore(path);
+#else
+            KeyStore = path is null ? Web3KeyStore.DefaultKeyStore : new Web3KeyStore(path);
+#endif
 
             _privateKeyString = privateKeyString;
             //Auto login for miner, seed, launcher

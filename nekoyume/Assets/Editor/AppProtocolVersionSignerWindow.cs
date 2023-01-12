@@ -174,15 +174,12 @@ namespace Editor
 
         void FillAttributes()
         {
-            if (Platform.IsMobilePlatform())
-            {
-                string dataPath = Platform.GetPersistentDataPath("KeyStore");
-                _keyStore = new Web3KeyStore(dataPath);
-            }
-            else
-            {
-                _keyStore = Web3KeyStore.DefaultKeyStore;
-            }
+#if UNITY_IOS || UNITY_ANDROID
+            string dataPath = Platform.GetPersistentDataPath("KeyStore");
+            _keyStore = new Web3KeyStore(dataPath);
+#else
+            _keyStore = Web3KeyStore.DefaultKeyStore;
+#endif
 
             maxSize = new Vector2(600, 450);
             _timestamp = DateTimeOffset.UtcNow;

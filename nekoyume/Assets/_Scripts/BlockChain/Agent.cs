@@ -376,20 +376,19 @@ namespace Nekoyume.BlockChain
 
         private void PrepareForNativeLib_256K1()
         {
-            if (Application.platform == RuntimePlatform.Android)
-            {
-                string Path_256K1 = default;
-                OSPlatform os = default;
-                Architecture arc = default;
-                Path_256K1 = Application.dataPath.Split("/base.apk")[0];
-                Path_256K1 = Path.Combine(Path_256K1, "lib");
-                Path_256K1 = Path.Combine(Path_256K1, Environment.Is64BitProcess ? "arm64" : "arm");
-                Path_256K1 = Path.Combine(Path_256K1, "libsecp256k1.so");
-                os = OSPlatform.Linux;
-                arc = Environment.Is64BitProcess ? Architecture.Arm64 : Architecture.Arm;
-                // Load native library for secp256k1
-                Secp256k1Net.UnityPathHelper.SetSpecificPath(Path_256K1, os, arc);
-            }
+#if UNITY_ANDROID
+            string Path_256K1 = default;
+            OSPlatform os = default;
+            Architecture arc = default;
+            Path_256K1 = Application.dataPath.Split("/base.apk")[0];
+            Path_256K1 = Path.Combine(Path_256K1, "lib");
+            Path_256K1 = Path.Combine(Path_256K1, Environment.Is64BitProcess ? "arm64" : "arm");
+            Path_256K1 = Path.Combine(Path_256K1, "libsecp256k1.so");
+            os = OSPlatform.Linux;
+            arc = Environment.Is64BitProcess ? Architecture.Arm64 : Architecture.Arm;
+            // Load native library for secp256k1
+            Secp256k1Net.UnityPathHelper.SetSpecificPath(Path_256K1, os, arc);
+#endif
         }
 
         protected void OnDestroy()

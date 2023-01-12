@@ -130,24 +130,19 @@ namespace Nekoyume.BlockChain
             yield return null;
 
             // Android Mono only support arm7(32bit) backend in unity engine.
-            bool architecture_is_32bit = ! Environment.Is64BitProcess;
-            bool is_Android = Application.platform == RuntimePlatform.Android;
-            if (is_Android && architecture_is_32bit)
+#if UNITY_ANDROID && ! UNITY_64
+            // 1. System.Net.WebClient is invaild when use Android Mono in currnet unity version.
+            // See this: https://issuetracker.unity3d.com/issues/system-dot-net-dot-webclient-not-working-when-building-on-android
+            // 2. If we use WWW class as a workaround, unfortunately, this class can't be used in aysnc function.
+            // So I can only use normal ImportBlock() function when build in Android Mono backend :(
+            _genesis = BlockManager.ImportBlock(null);
+#else
+            var task = Task.Run(async () =>
             {
-                // 1. System.Net.WebClient is invaild when use Android Mono in currnet unity version.
-                // See this: https://issuetracker.unity3d.com/issues/system-dot-net-dot-webclient-not-working-when-building-on-android
-                // 2. If we use WWW class as a workaround, unfortunately, this class can't be used in aysnc function.
-                // So I can only use normal ImportBlock() function when build in Android Mono backend :(
-                _genesis = BlockManager.ImportBlock(null);
-            }
-            else
-            {
-                var task = Task.Run(async () =>
-                {
-                    _genesis = await BlockManager.ImportBlockAsync(options.GenesisBlockPath ?? BlockManager.GenesisBlockPath());
-                });
-                yield return new WaitUntil(() => task.IsCompleted);
-            }
+                _genesis = await BlockManager.ImportBlockAsync(options.GenesisBlockPath ?? BlockManager.GenesisBlockPath());
+            });
+            yield return new WaitUntil(() => task.IsCompleted);
+#endif
 
             var appProtocolVersion = options.AppProtocolVersion is null
                 ? default

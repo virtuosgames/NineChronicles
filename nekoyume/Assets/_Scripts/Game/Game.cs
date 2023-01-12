@@ -181,27 +181,23 @@ namespace Nekoyume.Game
         private void LoadRocksDBNativeLib()
         {
             string Path_RocksDB = default;
-            if (Application.platform == RuntimePlatform.Android)
-            {
-                Path_RocksDB = Application.dataPath.Split("/base.apk")[0];
-                Path_RocksDB = Path.Combine(Path_RocksDB, "lib");
-                Path_RocksDB = Path.Combine(Path_RocksDB, Environment.Is64BitOperatingSystem? "arm64": "arm");
-                Path_RocksDB = Path.Combine(Path_RocksDB, "librocksdb.so");
-                Debug.LogWarning($"native load path = {Path_RocksDB}");
-            }
-            else if (Application.platform == RuntimePlatform.WindowsEditor)
-            {
-                //D:\NineChronicles\NineChro\nekoyume
+#if UNITY_ANDROID
+            Path_RocksDB = Application.dataPath.Split("/base.apk")[0];
+            Path_RocksDB = Path.Combine(Path_RocksDB, "lib");
+            Path_RocksDB = Path.Combine(Path_RocksDB, Environment.Is64BitOperatingSystem ? "arm64" : "arm");
+            Path_RocksDB = Path.Combine(Path_RocksDB, "librocksdb.so");
+            Debug.LogWarning($"native load path = {Path_RocksDB}");
+#elif UNITY_EDITOR_WIN
+                // ...\NineChronicles\NineChro\nekoyume
                 Path_RocksDB = Environment.CurrentDirectory;
                 Path_RocksDB = Path.Combine(Path_RocksDB, "Assets", "Packages", "runtimes");
                 Path_RocksDB = Path.Combine(Path_RocksDB, "win-x64", "native", "rocksdb.dll");
-            }
-            else if(Application.platform == RuntimePlatform.WindowsPlayer)
-            {
+#elif UNITY_STANDALONE_WIN
                 // pc standalone
                 Path_RocksDB = Path.Combine(Application.dataPath, "Plugins");
                 Path_RocksDB = Path.Combine(Path_RocksDB, "x86_64", "rocksdb.dll");
-            }
+#endif
+
             // Load native library for rocksdb 
             RocksDbSharp.Native.LoadLibrary(Path_RocksDB);    
         }
@@ -942,43 +938,38 @@ namespace Nekoyume.Game
         }
         void Update()
         {
+            // Lock resolution to native on Android. IOS should use other method.
 #if UNITY_ANDROID
-            if (Platform.IsMobilePlatform())
+            int width = Screen.resolutions[0].width;
+            int height = Screen.resolutions[0].height;
+            if (Screen.currentResolution.width != height || Screen.currentResolution.height != width)
             {
-                int width = Screen.resolutions[0].width;
-                int height = Screen.resolutions[0].height;
-                if (Screen.currentResolution.width != height || Screen.currentResolution.height != width)
-                {
-                    Debug.LogWarning($"fix Resolution to w={width} h={height}");
-                    Screen.SetResolution(height, width, true);
-                }
+                Debug.LogWarning($"fix Resolution to w={width} h={height}");
+                Screen.SetResolution(height, width, true);
             }
 #endif
         }
+
         private void LoadRocksDBNative()
         {
             string loadPath = default;
-            if (Application.platform == RuntimePlatform.Android)
-            {
-                loadPath = Application.dataPath.Split("/base.apk")[0];
-                loadPath = Path.Combine(loadPath, "lib");
-                loadPath = Path.Combine(loadPath, Environment.Is64BitOperatingSystem ? "arm64" : "arm");
-                loadPath = Path.Combine(loadPath, "librocksdb.so");
-                Debug.LogWarning($"native load path = {loadPath}");
-            }
-            else if (Application.platform == RuntimePlatform.WindowsEditor)
-            {
-                //D:\NineChronicles\NineChro\nekoyume
-                loadPath = Environment.CurrentDirectory;
-                loadPath = Path.Combine(loadPath, "Assets", "Packages", "runtimes");
-                loadPath = Path.Combine(loadPath, "win-x64", "native", "rocksdb.dll");
-            }
-            else if (Application.platform == RuntimePlatform.WindowsPlayer)
-            {
-                // pc standalone
-                loadPath = Path.Combine(Application.dataPath, "Plugins");
-                loadPath = Path.Combine(loadPath, "x86_64", "rocksdb.dll");
-            }
+
+#if UNITY_ANDROID
+            loadPath = Application.dataPath.Split("/base.apk")[0];
+            loadPath = Path.Combine(loadPath, "lib");
+            loadPath = Path.Combine(loadPath, Environment.Is64BitOperatingSystem ? "arm64" : "arm");
+            loadPath = Path.Combine(loadPath, "librocksdb.so");
+            Debug.LogWarning($"native load path = {loadPath}");
+#elif UNITY_EDITOR_WIN
+            // ...\NineChronicles\NineChro\nekoyume
+            loadPath = Environment.CurrentDirectory;
+            loadPath = Path.Combine(loadPath, "Assets", "Packages", "runtimes");
+            loadPath = Path.Combine(loadPath, "win-x64", "native", "rocksdb.dll");
+#elif UNITY_STANDALONE_WIN
+            // pc standalone
+            loadPath = Path.Combine(Application.dataPath, "Plugins");
+            loadPath = Path.Combine(loadPath, "x86_64", "rocksdb.dll");
+#endif
 
             RocksDbSharp.Native.LoadLibrary(loadPath);
         }

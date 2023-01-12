@@ -18,17 +18,14 @@ namespace Nekoyume.UI.Module
         {
             base.OnEnable();
             // Mobile platform adaptation
-            if(Platform.IsMobilePlatform())
-            {
-                closeMask.gameObject.SetActive(true);
-                // Only add listener once
-                closeMask.onClick.RemoveAllListeners();
-                closeMask.onClick.AddListener(HideTooltip);
-            }
-            else
-            {
-                closeMask.gameObject.SetActive(false);
-            }
+#if UNITY_IOS || UNITY_ANDROID
+            closeMask.gameObject.SetActive(true);
+            // Only add listener once
+            closeMask.onClick.RemoveAllListeners();
+            closeMask.onClick.AddListener(HideTooltip);
+#else
+            closeMask.gameObject.SetActive(false);
+#endif
         }
 
         public void Show(string title, string content, Vector2 position, bool localize = true)

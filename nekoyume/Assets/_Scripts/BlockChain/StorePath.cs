@@ -37,10 +37,9 @@ namespace Nekoyume.BlockChain
 #endif
             }
 
-            if (Platform.IsMobilePlatform())
-            {
-                return Platform.GetPersistentDataPath("DefaultStorage");
-            }
+#if UNITY_IOS || UNITY_ANDROID
+            return Platform.GetPersistentDataPath("DefaultStorage");
+#else
 
             var dirname = DirNames.TryGetValue(env.Value, out var dirName) ? dirName : DirNames[Env.Production];
             // Linux/macOS: $HOME/.local/share/planetarium/
@@ -49,6 +48,7 @@ namespace Nekoyume.BlockChain
                 GetPrefixPath(),
                 dirname + Postfix
             );
+#endif
         }
 
         public static string GetPrefixPath()
@@ -56,12 +56,11 @@ namespace Nekoyume.BlockChain
             var prefix = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
             // Linux/macOS: $HOME/.local/share/planetarium/
             // Windows: %LOCALAPPDATA%\planetarium\ (i.e., %HOME%\AppData\Local\planetarium\9c)
-            if (Platform.IsMobilePlatform())
-            {
-                return Platform.GetPersistentDataPath("planetarium");
-            }
-
+#if UNITY_IOS || UNITY_ANDROID
+            return Platform.GetPersistentDataPath("planetarium");
+#else
             return Path.Combine(prefix, "planetarium");
+#endif
         }
     }
 }
