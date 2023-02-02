@@ -132,7 +132,7 @@ namespace Nekoyume.Game
 
             string secp256LibPath = Platform.GetStreamingAssetsPath("libsecp256k1.dylib");
             Secp256k1Net.UnityPathHelper.SetSpecificPath(secp256LibPath);
-#elif UNITY_ANDROID
+#elif UNITY_ANDROID && !UNITY_EDITOR
             LoadRocksDBNative();
             bool HasStoragePermission() =>
                 Permission.HasUserAuthorizedPermission(Permission.ExternalStorageWrite)
@@ -148,12 +148,14 @@ namespace Nekoyume.Game
             {
                 Permission.RequestUserPermissions(permission);
             }
+#else
+            LoadRocksDBNative();
 #endif
             Application.targetFrameRate = 60;
             Application.SetStackTraceLogType(LogType.Log, StackTraceLogType.None);
             base.Awake();
 
-#if UNITY_IOS
+#if UNITY_IOS && !UNITY_EDITOR
             _options = CommandLineOptions.Load(Platform.GetStreamingAssetsPath("clo.json"));
 #else
             _options = CommandLineOptions.Load(
@@ -176,30 +178,6 @@ namespace Nekoyume.Game
             LocalLayer = new LocalLayer();
             LocalLayerActions = new LocalLayerActions();
             MainCanvas.instance.InitializeIntro();
-        }
-
-        private void LoadRocksDBNativeLib()
-        {
-            string Path_RocksDB = default;
-#if UNITY_ANDROID
-            Path_RocksDB = Application.dataPath.Split("/base.apk")[0];
-            Path_RocksDB = Path.Combine(Path_RocksDB, "lib");
-            Path_RocksDB = Path.Combine(Path_RocksDB, Environment.Is64BitOperatingSystem ? "arm64" : "arm");
-            Path_RocksDB = Path.Combine(Path_RocksDB, "librocksdb.so");
-            Debug.LogWarning($"native load path = {Path_RocksDB}");
-#elif UNITY_EDITOR_WIN
-                // ...\NineChronicles\NineChro\nekoyume
-                Path_RocksDB = Environment.CurrentDirectory;
-                Path_RocksDB = Path.Combine(Path_RocksDB, "Assets", "Packages", "runtimes");
-                Path_RocksDB = Path.Combine(Path_RocksDB, "win-x64", "native", "rocksdb.dll");
-#elif UNITY_STANDALONE_WIN
-                // pc standalone
-                Path_RocksDB = Path.Combine(Application.dataPath, "Plugins");
-                Path_RocksDB = Path.Combine(Path_RocksDB, "x86_64", "rocksdb.dll");
-#endif
-
-            // Load native library for rocksdb 
-            RocksDbSharp.Native.LoadLibrary(Path_RocksDB);    
         }
 
         private IEnumerator Start()
@@ -939,7 +917,7 @@ namespace Nekoyume.Game
         void Update()
         {
             // Lock resolution to native on Android. IOS should use other method.
-#if UNITY_ANDROID
+#if UNITY_ANDROID && !UNITY_EDITOR
             int width = Screen.resolutions[0].width;
             int height = Screen.resolutions[0].height;
             if (Screen.currentResolution.width != height || Screen.currentResolution.height != width)
@@ -954,7 +932,7 @@ namespace Nekoyume.Game
         {
             string loadPath = default;
 
-#if UNITY_ANDROID
+#if UNITY_ANDROID && !UNITY_EDITOR
             loadPath = Application.dataPath.Split("/base.apk")[0];
             loadPath = Path.Combine(loadPath, "lib");
             loadPath = Path.Combine(loadPath, Environment.Is64BitOperatingSystem ? "arm64" : "arm");

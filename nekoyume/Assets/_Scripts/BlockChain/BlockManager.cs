@@ -26,7 +26,7 @@ namespace Nekoyume.BlockChain
         public static string GenesisBlockPath()
         {
             // Android should use correct path.
-#if UNITY_ANDROID
+#if UNITY_ANDROID && !UNITY_EDITOR
             String dataPath = Platform.GetPersistentDataPath(GenesisBlockName);
             return dataPath;
 #endif
@@ -54,7 +54,7 @@ namespace Nekoyume.BlockChain
         public static Block<PolymorphicAction<ActionBase>> ImportBlock(string path)
         {
             // read temp genesis-block
-#if UNITY_ANDROID
+#if UNITY_ANDROID && !UNITY_EDITOR
             WWW www = new WWW(Platform.GetStreamingAssetsPath("genesis-block"));
             while (!www.isDone)
             {

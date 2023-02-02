@@ -42,7 +42,7 @@ namespace MessagePack
             return true;
         }
 
-#if UNITY_ANDROID
+#if UNITY_ANDROID && !UNITY_EDITOR
 
         /// <summary>
         /// In Android 32bit device(armv7) + IL2CPP does not work correctly on Unsafe.ReadUnaligned.
@@ -86,7 +86,7 @@ namespace MessagePack
             return true;
         }
 
-#if UNITY_ANDROID
+#if UNITY_ANDROID && !UNITY_EDITOR
 
         private static unsafe bool TryReadMultisegment(ref SequenceReader<byte> reader, out long value)
         {

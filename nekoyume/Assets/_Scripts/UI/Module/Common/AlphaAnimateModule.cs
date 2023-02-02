@@ -26,7 +26,7 @@ namespace Nekoyume.UI.Module.Common
                 canvasGroup.alpha = 1f;
             }
 
-#if UNITY_IOS || UNITY_ANDROID
+#if (UNITY_IOS || UNITY_ANDROID) && !UNITY_EDITOR
             EventTrigger eventTrigger = this.GetComponent<EventTrigger>();
             if (eventTrigger is null)
             {

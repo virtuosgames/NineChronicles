@@ -10,7 +10,7 @@ namespace MessagePack
     {
         internal static long ToInt64(ReadOnlySpan<byte> value)
         {
-#if UNITY_ANDROID
+#if UNITY_ANDROID && !UNITY_EDITOR
             if (BitConverter.IsLittleEndian)
             {
                 long i1 = value[0] | (value[1] << 8) | (value[2] << 16) | (value[3] << 24);
@@ -32,7 +32,7 @@ namespace MessagePack
 
         internal static ushort ToUInt16(ReadOnlySpan<byte> value)
         {
-#if UNITY_ANDROID
+#if UNITY_ANDROID && !UNITY_EDITOR
             if (BitConverter.IsLittleEndian)
             {
                 return (ushort)(value[0] | (value[1] << 8));
@@ -48,7 +48,7 @@ namespace MessagePack
 
         internal static uint ToUInt32(ReadOnlySpan<byte> value)
         {
-#if UNITY_ANDROID
+#if UNITY_ANDROID && !UNITY_EDITOR
             if (BitConverter.IsLittleEndian)
             {
                 return (uint)(value[0] | (value[1] << 8) | (value[2] << 16) | (value[3] << 24));

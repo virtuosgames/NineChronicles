@@ -130,7 +130,7 @@ namespace Nekoyume.BlockChain
             yield return null;
 
             // Android Mono only support arm7(32bit) backend in unity engine.
-#if UNITY_ANDROID && ! UNITY_64
+#if UNITY_ANDROID && !UNITY_EDITOR && !UNITY_64
             // 1. System.Net.WebClient is invaild when use Android Mono in currnet unity version.
             // See this: https://issuetracker.unity3d.com/issues/system-dot-net-dot-webclient-not-working-when-building-on-android
             // 2. If we use WWW class as a workaround, unfortunately, this class can't be used in aysnc function.

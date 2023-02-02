@@ -18,7 +18,7 @@ namespace Nekoyume.UI.Module
         {
             base.OnEnable();
             // Mobile platform adaptation
-#if UNITY_IOS || UNITY_ANDROID
+#if (UNITY_IOS || UNITY_ANDROID) && !UNITY_EDITOR
             closeMask.gameObject.SetActive(true);
             // Only add listener once
             closeMask.onClick.RemoveAllListeners();

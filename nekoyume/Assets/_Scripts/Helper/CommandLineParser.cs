@@ -381,7 +381,7 @@ namespace Nekoyume.Helper
                 PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
                 ReadCommentHandling = JsonCommentHandling.Skip,
             };
-#if UNITY_ANDROID
+#if UNITY_ANDROID && !UNITY_EDITOR
             // error: current no clo.json
             UnityEngine.WWW www = new UnityEngine.WWW(Platform.GetStreamingAssetsPath("clo.json"));
             while (!www.isDone)

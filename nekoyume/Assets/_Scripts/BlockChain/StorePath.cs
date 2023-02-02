@@ -37,7 +37,7 @@ namespace Nekoyume.BlockChain
 #endif
             }
 
-#if UNITY_IOS || UNITY_ANDROID
+#if (UNITY_IOS || UNITY_ANDROID) && !UNITY_EDITOR
             return Platform.GetPersistentDataPath("DefaultStorage");
 #else
 
@@ -56,7 +56,7 @@ namespace Nekoyume.BlockChain
             var prefix = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
             // Linux/macOS: $HOME/.local/share/planetarium/
             // Windows: %LOCALAPPDATA%\planetarium\ (i.e., %HOME%\AppData\Local\planetarium\9c)
-#if UNITY_IOS || UNITY_ANDROID
+#if (UNITY_IOS || UNITY_ANDROID) && !UNITY_EDITOR
             return Platform.GetPersistentDataPath("planetarium");
 #else
             return Path.Combine(prefix, "planetarium");

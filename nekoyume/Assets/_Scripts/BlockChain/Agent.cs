@@ -376,7 +376,7 @@ namespace Nekoyume.BlockChain
 
         private void PrepareForNativeLib_256K1()
         {
-#if UNITY_ANDROID
+#if UNITY_ANDROID && !UNITY_EDITOR
             string Path_256K1 = default;
             OSPlatform os = default;
             Architecture arc = default;

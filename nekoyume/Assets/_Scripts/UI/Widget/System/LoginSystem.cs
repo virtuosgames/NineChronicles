@@ -70,7 +70,7 @@ namespace Nekoyume.UI
         protected override void Awake()
         {
             // Default KeyStore in android is invalid, we should redefine it.
-#if UNITY_IOS || UNITY_ANDROID
+#if (UNITY_IOS || UNITY_ANDROID) && !UNITY_EDITOR
             string dataPath = Platform.PersistentDataPath;
             KeyStore = new Web3KeyStore(dataPath + "/KeyStore");
 #else
@@ -323,7 +323,7 @@ namespace Nekoyume.UI
                 _capturedImage.Show();
             }
 
-#if UNITY_IOS || UNITY_ANDROID
+#if (UNITY_IOS || UNITY_ANDROID) && !UNITY_EDITOR
             string dataPath = Platform.GetPersistentDataPath("KeyStore");
             KeyStore = path is null ? new Web3KeyStore(dataPath) : new Web3KeyStore(path);
 #else

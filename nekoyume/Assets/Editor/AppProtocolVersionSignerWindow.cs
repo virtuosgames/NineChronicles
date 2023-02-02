@@ -174,7 +174,7 @@ namespace Editor
 
         void FillAttributes()
         {
-#if UNITY_IOS || UNITY_ANDROID
+#if (UNITY_IOS || UNITY_ANDROID) && !UNITY_EDITOR
             string dataPath = Platform.GetPersistentDataPath("KeyStore");
             _keyStore = new Web3KeyStore(dataPath);
 #else
